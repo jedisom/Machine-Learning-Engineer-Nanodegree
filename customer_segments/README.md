@@ -1,16 +1,25 @@
 # Creating Customer Segments
 
-Unsupervised Learning Project
+Unsupervised Learning Project  - from the Udacity Machine Learning Engineer Nanodegree
 
-## Template code
+## Template code provided by Udacity
 
-In this directory (`customer_segments/`), run `ipython notebook`, open `customer_segments.ipynb` and follow the instructions.
+The ipython notebook shell was provided in this directory (`customer_segments/`).  to view my version of the completed 
+the ipython notebook, open `customer_segments.ipynb` 
 
-Note: You need Python 2.7, NumPy, pandas, matplotlib and scikit-learn to work on this notebook.
+Note: You need Python 2.7, NumPy, pandas, matplotlib and scikit-learn for the code in this notbook to work
+
+## Project Description
+
+The following problem description was provided by Udacity to give background on the data set and what we were to accomplish.
+
+>You’ve been hired by a wholesale grocery distributor to help them determine which changes will benefit their business. They recently tested out a change to their delivery method, from a regular morning delivery to a cheaper, bulk evening delivery. Initial tests didn’t discover any significant effect, so they implemented the cheaper option. Almost immediately, they began getting complaints about the change and losing customers. As it turns out, the highest volume customers had an easy time adapting to the change, whereas smaller family run shops had serious issues with it--but these issues were washed out statistically by noise from the larger customers.
+
+>For the future, they want to have a sense of what sorts of different customers they have. Then, when implementing changes, they can look at the effects on these different groups independently. Your task is to use unsupervised techniques to see what sort of patterns exist among existing customers, and what exactly makes them different.
 
 ## Dataset
 
-The dataset refers to clients of a wholesale distributor. It includes the annual spending in monetary units (m.u.) on diverse product categories.
+The dataset (found in wholesale-customers.csv) refers to clients of a wholesale distributor. It includes the annual spending in monetary units (m.u.) on diverse product categories.
 
 It is part of a larger database published with the following paper:
 
