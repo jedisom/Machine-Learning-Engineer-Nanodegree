@@ -12,6 +12,7 @@ class LearningAgent(Agent):
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         # TODO: Initialize any additional variables here
 
+
     def reset(self, destination=None):
         self.planner.route_to(destination)
         # TODO: Prepare for a new trip; reset any variables here, if required
@@ -19,13 +20,15 @@ class LearningAgent(Agent):
     def update(self, t):
         # Gather inputs
         self.next_waypoint = self.planner.next_waypoint()  # from route planner, also displayed by simulator
-        inputs = self.env.sense(self)
-        deadline = self.env.get_deadline(self)
+        inputs = self.env.sense(self)  #Need to determine traffic light status, presence of cars
+        deadline = self.env.get_deadline(self) #Current dealine remaining (in time steps)
 
         # TODO: Update state
         
+        
         # TODO: Select action according to your policy
-        action = None
+        # Part I of assignments tells me to randomly select an action        
+        action = random.choice(self.env.valid_actions)
 
         # Execute action and get reward
         reward = self.env.act(self, action)
