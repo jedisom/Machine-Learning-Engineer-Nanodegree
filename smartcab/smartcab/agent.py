@@ -22,16 +22,16 @@ class LearningAgent(Agent):
         self.next_waypoint = self.planner.next_waypoint()  # from route planner, also displayed by simulator
         deadline = self.env.get_deadline(self) #Current dealine remaining (in time steps)        
         inputs = self.env.sense(self)  #Need to determine traffic light status, presence of cars
-        location = self.env.agent_states[self.agent]['location']  #NOT actually a state input
-        Xdist = self.planner.destination[0] - location[0]  #Get delta X distance
-        Ydist = self.planner.destination[1] - location[1]  #Get delta Y distance
-        heading = self.env.agent_states[self.agent]['heading']  #Get agent heading
+        state = self.env.agent_states[self]
+        Xdist = self.planner.destination[0] - state['location'][0]  #Get delta X distance
+        Ydist = self.planner.destination[1] - state['location'][1]  #Get delta Y distance        
+        heading = state['heading']
 
         # TODO: Update state
         
         
         # TODO: Select action according to your policy
-        # Part I of assignments tells me to randomly select an action        
+        # Part I of assignment tells me to randomly select an action        
         action = random.choice(self.env.valid_actions)
 
         # Execute action and get reward
