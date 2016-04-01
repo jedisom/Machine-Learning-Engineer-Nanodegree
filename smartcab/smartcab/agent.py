@@ -29,18 +29,22 @@ class LearningAgent(Agent):
         #create Q matrix
         # rows based on this coding system (next_waypoint, light_status, oncoming, left, right, Xdist,
         #                                   Ydist, heading, #steps 'til deadline, ) 
-        print "Initializing Q learning matrix..."        
-        row_names = np.empty(0)       
-        for combination in itertools.product(actions, lights, actions, actions, actions, Xlist, Ylist, headings): #T, 
-            #initialize as zeros            
-            row_name = ', '.join(map(str, list(combination)))          
-            row_names = np.append(row_names,row_name)
+        #only do this once and write it to csv file to be read later   
+        if (os.path.isfile("row_names.csv") == False):
+            c = csv.writer(open("row_names.csv", "wb"))            
+            row_names = np.empty(0)       
+            for combination in itertools.product(actions, lights, actions, actions, actions, Xlist, Ylist, headings): #T, 
+                #initialize as zeros            
+                row_name = ', '.join(map(str, list(combination)))          
+                c.writerow(row_name)                
+                row_names = np.append(row_names,row_name)
+            
             
         self.Q = pd.DataFrame(index=row_names, columns=actions)
         self.Q = self.Q.fillna(0)
-        print self.Q.head(5)
-        print self.Q.tail(5)
+        self.Qprime = self.Q
         print "DONE; start learning..."
+
 
 
     def reset(self, destination=None):
