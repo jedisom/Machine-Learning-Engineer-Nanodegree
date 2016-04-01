@@ -20,8 +20,12 @@ class LearningAgent(Agent):
     def update(self, t):
         # Gather inputs
         self.next_waypoint = self.planner.next_waypoint()  # from route planner, also displayed by simulator
+        deadline = self.env.get_deadline(self) #Current dealine remaining (in time steps)        
         inputs = self.env.sense(self)  #Need to determine traffic light status, presence of cars
-        deadline = self.env.get_deadline(self) #Current dealine remaining (in time steps)
+        location = self.env.agent_states[self.agent]['location']  #NOT actually a state input
+        Xdist = self.planner.destination[0] - location[0]  #Get delta X distance
+        Ydist = self.planner.destination[1] - location[1]  #Get delta Y distance
+        heading = self.env.agent_states[self.agent]['heading']  #Get agent heading
 
         # TODO: Update state
         
@@ -35,7 +39,7 @@ class LearningAgent(Agent):
 
         # TODO: Learn policy based on state, action, reward
 
-        print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
+        print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, Xdist = {}, Ydist = {}, heading = {}, reward = {}".format(deadline, inputs, action, Xdist, Ydist, heading, reward)  # [debug]
 
 
 def run():
