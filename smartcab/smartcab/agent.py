@@ -38,7 +38,8 @@ class LearningAgent(Agent):
             
         self.Q = pd.DataFrame(index=row_names, columns=actions)
         self.Q = self.Q.fillna(0)
-        self.Qprime = self.Q
+        print self.Q.head(5)
+        print self.Q.tail(5)
         print "DONE; start learning..."
 
 
@@ -61,9 +62,7 @@ class LearningAgent(Agent):
         # TODO: Update state
         # state rows based on this coding system (next_waypoint, light_status, oncoming, left, right, Xdist,
         #                                         Ydist, heading, #steps 'til deadline, )         
-                
-        #current_state = ', '.join(self.next_waypoint, inputs, Xdist, Ydist, heading) #time left to reach desination
-        #deadline, inputs, Xdist, Ydist, heading)
+        current_state = ', '.join(map(str, list(self.next_waypoint, inputs, Xdist, Ydist, heading))) #time left to reach desination
         
         # TODO: Select action according to your policy
         # Part I of assignment tells me to randomly select an action        
@@ -73,6 +72,10 @@ class LearningAgent(Agent):
         reward = self.env.act(self, action)
 
         # TODO: Learn policy based on state, action, reward
+        #find maximum Qprime over all actions
+        max_Qprime = ???
+        utility = reward + self.gamma * max_Qprime
+        self.Q = (1-self.alpha)*self.Q + self.alpha(utility)
 
         print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, Xdist = {}, Ydist = {}, heading = {}, reward = {}".format(deadline, inputs, action, Xdist, Ydist, heading, reward)  # [debug]
 
