@@ -1,6 +1,8 @@
 import random
 import numpy as np
-from environment import Agent, Environment
+import pandas as pd
+import itertools
+from environment import Agent, Environment, TrafficLight
 from planner import RoutePlanner
 from simulator import Simulator
 
@@ -12,16 +14,32 @@ class LearningAgent(Agent):
         self.color = 'red'  # override color
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         # TODO: Initialize any additional variables here
-        #self.gamma = 0.5 #discount rate
+        self.gamma = 0.5 #discount rate
+        self.alpha = 0.5 #learning rate
+    
+        #CREATE STARTING Q LEARNING MATRIX
+        #Calculate variables determining the matrix' size
+        actions = self.env.valid_actions
+        lights = TrafficLight().valid_states        
+        Xlist = np.arange(self.env.grid_size[0])
+        Ylist = np.arange(self.env.grid_size[1])                
+        headings = self.env.valid_headings
+        #self.T = 0   
         
-        #create starting Q learning matrix
-        # rows based on this coding system (next_waypoint, steps 'til deadline, light_status, oncoming, left, right, Xdist,
-        #                                   Ydist, heading)        
-        #self.T = 0       
-        #Xlist = np.arange(self.env.grid_size[0])
-        #Ysize = self.env.grid_size[1]
-        #        
-        #self.env.valid_actions
+        #create Q matrix
+        # rows based on this coding system (next_waypoint, light_status, oncoming, left, right, Xdist,
+        #                                   Ydist, heading, #steps 'til deadline, ) 
+        print "Initializing Q learning matrix..."        
+        row_names = np.empty(0)       
+        for combination in itertools.product(actions, lights, actions, actions, actions, Xlist, Ylist, headings): #T, 
+            #initialize as zeros            
+            row_name = ', '.join(map(str, list(combination)))          
+            row_names = np.append(row_names,row_name)
+            
+        self.Q = pd.DataFrame(index=row_names, columns=actions)
+        self.Q = self.Q.fillna(0)
+        self.Qprime = self.Q
+        print "DONE; start learning..."
 
 
     def reset(self, destination=None):
@@ -41,7 +59,11 @@ class LearningAgent(Agent):
         heading = state['heading']
 
         # TODO: Update state
-        #current_state = np.array(self.next_waypoint, deadline, inputs, Xdist, Ydist, heading)
+        # state rows based on this coding system (next_waypoint, light_status, oncoming, left, right, Xdist,
+        #                                         Ydist, heading, #steps 'til deadline, )         
+                
+        #current_state = ', '.join(self.next_waypoint, inputs, Xdist, Ydist, heading) #time left to reach desination
+        #deadline, inputs, Xdist, Ydist, heading)
         
         # TODO: Select action according to your policy
         # Part I of assignment tells me to randomly select an action        
