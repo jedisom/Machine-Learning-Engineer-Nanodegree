@@ -1,4 +1,5 @@
 import random
+import numpy as np
 from environment import Agent, Environment
 from planner import RoutePlanner
 from simulator import Simulator
@@ -11,6 +12,16 @@ class LearningAgent(Agent):
         self.color = 'red'  # override color
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         # TODO: Initialize any additional variables here
+        #self.gamma = 0.5 #discount rate
+        
+        #create starting Q learning matrix
+        # rows based on this coding system (next_waypoint, steps 'til deadline, light_status, oncoming, left, right, Xdist,
+        #                                   Ydist, heading)        
+        #self.T = 0       
+        #Xlist = np.arange(self.env.grid_size[0])
+        #Ysize = self.env.grid_size[1]
+        #        
+        #self.env.valid_actions
 
 
     def reset(self, destination=None):
@@ -23,12 +34,14 @@ class LearningAgent(Agent):
         deadline = self.env.get_deadline(self) #Current dealine remaining (in time steps)        
         inputs = self.env.sense(self)  #Need to determine traffic light status, presence of cars
         state = self.env.agent_states[self]
+        
+        #May want to rework these distance measures because the map wraps around
         Xdist = self.planner.destination[0] - state['location'][0]  #Get delta X distance
         Ydist = self.planner.destination[1] - state['location'][1]  #Get delta Y distance        
         heading = state['heading']
 
         # TODO: Update state
-        
+        #current_state = np.array(self.next_waypoint, deadline, inputs, Xdist, Ydist, heading)
         
         # TODO: Select action according to your policy
         # Part I of assignment tells me to randomly select an action        
