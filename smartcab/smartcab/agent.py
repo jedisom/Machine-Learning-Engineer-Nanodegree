@@ -2,8 +2,8 @@ import random
 import numpy as np
 import pandas as pd
 import itertools
-import os, csv
-from environment import Agent, Environment, TrafficLight
+import os, csv, copy
+from environment import Agent, Environment
 from planner import RoutePlanner
 from simulator import Simulator
 
@@ -41,8 +41,8 @@ class LearningAgent(Agent):
             row_names = np.append(row_names,row_name)
          #   c.writerows(row_names) 
             
-        col_labels = actions
-        #col_labels[0] = str(col_labels[0])
+        col_labels = copy.deepcopy(actions)
+        col_labels[0] = str(col_labels[0])
         self.Q = pd.DataFrame(0, index=row_names, columns=col_labels)
         self.prev_state = None
         self.prev_action = None
