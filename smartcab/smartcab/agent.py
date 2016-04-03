@@ -22,9 +22,9 @@ class LearningAgent(Agent):
         #CREATE STARTING Q LEARNING MATRIX
         #Calculate variables determining the matrix' size
         actions = self.env.valid_actions
-        lights = TrafficLight().valid_states
-        max_L1_dist =  self.env.grid_size[0] * self.env.grid_size[0]       
-        max_time_buffer = max_L1_dist * 5 - max_L1_dist
+        lights = ['green', 'red']
+        #max_L1_dist =  self.env.grid_size[0] * self.env.grid_size[0]       
+        #max_time_buffer = max_L1_dist * 5 - max_L1_dist
         #time_list = np.arange(max_time_buffer)                
         headings = self.env.valid_headings
         
@@ -37,7 +37,7 @@ class LearningAgent(Agent):
         row_names = np.empty(0)       
         for combination in itertools.product(actions, lights, actions, actions, actions, 
                                              headings):  #time_list
-            row_name = '-'.join(map(str, list(combination)))          
+            row_name = '*'.join(map(str, list(combination)))          
             row_names = np.append(row_names,row_name)
          #   c.writerows(row_names) 
             
@@ -62,17 +62,23 @@ class LearningAgent(Agent):
         self.next_waypoint = self.planner.next_waypoint()  # from route planner, also displayed by simulator
         deadline = self.env.get_deadline(self) #Current dealine remaining (in time steps)        
         inputs = self.env.sense(self)  #Need to determine traffic light status, presence of cars
+        light = inputs['light']
+        oncoming = inputs['oncoming']
+        left = inputs['left']
+        right = inputs['right']        
         state = self.env.agent_states[self]
+        heading = state['heading']
         
         #May want to rework these distance measures because the map wraps around
-        Xdist = self.planner.destination[0] - state['location'][0]  #Get delta X distance
-        Ydist = self.planner.destination[1] - state['location'][1]  #Get delta Y distance        
+        #Xdist = self.planner.destination[0] - state['location'][0]  #Get delta X distance
+        #Ydist = self.planner.destination[1] - state['location'][1]  #Get delta Y distance        
         #time_buffer = self.env.t - (abs(Xdist) + abs(Ydist))        
-        heading = state['heading']
+        
         
         # TODO: Update state
         #states use this coding system [next_waypoint, light_status, oncoming, left, right, & heading]       
-        current_state = ', '.join(map(str, list(self.next_waypoint, inputs, heading))) #time left to reach desination
+        current_state = '*'.join(map(str, list((self.next_waypoint, light, oncoming, 
+                                               left, right, heading)))) #time left to reach desination
         
         #Update Q matrix now that we know the future state (s')
         #current_state is equal to future state (s') from previous iteration
@@ -81,7 +87,7 @@ class LearningAgent(Agent):
             #Utility of state (s) = Q(s,a) = R(s,a) + gamma * max,a' [Q(s',a')]            
             utility = self.prev_reward + self.gamma * max_Qprime
             #Learning rate update formula: V <-- (1 - alpha) * V + alpha * X            
-            self.Q[self.prev_state, self.prev_action] = (1-self.alpha)*self.Q + self.alpha(utility)        
+            self.Q[self.prev_state, self.prev_action] = (1-self.alpha)*self.Q[self.prev_state, self.prev_action] + self.alpha(utility)        
                     
         # TODO: Select action according to your policy
         # Part I of assignment tells me to randomly select an action        
@@ -96,7 +102,7 @@ class LearningAgent(Agent):
 
         # TODO: Learn policy based on state, action, reward
 
-        print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, Xdist = {}, Ydist = {}, heading = {}, reward = {}".format(deadline, inputs, action, Xdist, Ydist, heading, reward)  # [debug]
+        print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, heading = {}, reward = {}".format(deadline, inputs, action, heading, reward)  # [debug]
         
     def get_future_state(self, t):
         #print "Environment.step(): t = {}".format(self.t)  # [debug]
