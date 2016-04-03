@@ -41,9 +41,9 @@ class LearningAgent(Agent):
             row_names = np.append(row_names,row_name)
          #   c.writerows(row_names) 
             
-            
-        self.Q = pd.DataFrame(index=row_names, columns=actions)
-        self.Q = self.Q.fillna(0)
+        col_labels = actions
+        #col_labels[0] = str(col_labels[0])
+        self.Q = pd.DataFrame(0, index=row_names, columns=col_labels)
         self.prev_state = None
         self.prev_action = None
         self.prev_reward = None
@@ -82,12 +82,18 @@ class LearningAgent(Agent):
         
         #Update Q matrix now that we know the future state (s')
         #current_state is equal to future state (s') from previous iteration
-        if (self.prev_state != None) and (self.prev_action != None) and (self.prev_reward != None):  
-            max_Qprime = max (self.Q[current_state,]) #Utility of next state (s')
+        if (self.prev_state != None):  
+            print "Made it to Q_matrix update"  #debug   
+            max_Qprime = max (self.Q.loc[current_state, ]) #Utility of next state (s')
             #Utility of state (s) = Q(s,a) = R(s,a) + gamma * max,a' [Q(s',a')]            
+            print "Made it past max_Qprime calculation"  #debug
             utility = self.prev_reward + self.gamma * max_Qprime
             #Learning rate update formula: V <-- (1 - alpha) * V + alpha * X            
-            self.Q[self.prev_state, self.prev_action] = (1-self.alpha)*self.Q[self.prev_state, self.prev_action] + self.alpha(utility)        
+            print "Made it past utility calculation"  #debug
+            s = str(self.prev_state)            
+            a = str(self.prev_action)
+            self.Q.loc[s, a] = (1 - self.alpha) * self.Q.loc[s, a] + self.alpha * (utility)        
+            print "Made it past Q update calculation"  #debug
                     
         # TODO: Select action according to your policy
         # Part I of assignment tells me to randomly select an action        
@@ -102,7 +108,8 @@ class LearningAgent(Agent):
 
         # TODO: Learn policy based on state, action, reward
 
-        print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, heading = {}, reward = {}".format(deadline, inputs, action, heading, reward)  # [debug]
+        print "LearningAgent.update(): deadline = {}, current_state = {}, action = {}, reward = {}".format(deadline, 
+                                         current_state, action, reward)  # [debug]
         
     def get_future_state(self, t):
         #print "Environment.step(): t = {}".format(self.t)  # [debug]
