@@ -2,7 +2,8 @@ import random
 import numpy as np
 import pandas as pd
 import itertools
-from environment import Agent, Environment, TrafficLight
+import os, csv, copy
+from environment import Agent, Environment
 from planner import RoutePlanner
 from simulator import Simulator
 
@@ -10,7 +11,8 @@ class LearningAgent(Agent):
     """An agent that learns to drive in the smartcab world."""
 
     def __init__(self, env):
-        super(LearningAgent, self).__init__(env)  # sets self.env = env, state = None, next_waypoint = None, and a default color
+        super(LearningAgent, self).__init__(env)  # sets self.env = env, state = None, 
+                                                  # next_waypoint = None, and a default color
         self.color = 'red'  # override color
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         # TODO: Initialize any additional variables here
@@ -20,26 +22,34 @@ class LearningAgent(Agent):
         #CREATE STARTING Q LEARNING MATRIX
         #Calculate variables determining the matrix' size
         actions = self.env.valid_actions
-        lights = TrafficLight().valid_states        
-        Xlist = np.arange(self.env.grid_size[0])
-        Ylist = np.arange(self.env.grid_size[1])                
+        lights = ['green', 'red']
+        #max_L1_dist =  self.env.grid_size[0] * self.env.grid_size[0]       
+        #max_time_buffer = max_L1_dist * 5 - max_L1_dist
+        #time_list = np.arange(max_time_buffer)                
         headings = self.env.valid_headings
-        #self.T = 0   
         
         #create Q matrix
-        # rows based on this coding system (next_waypoint, light_status, oncoming, left, right, Xdist,
-        #                                   Ydist, heading, #steps 'til deadline, ) 
-        print "Initializing Q learning matrix..."        
+        #states/rows use this coding system [next_waypoint, light_status, oncoming, left, right, & heading]
+        #only do this once and write it to csv file to be read later   
+        #if (os.path.isfile("row_names.csv") == False):
+        #    c = csv.writer(open("row_names.csv", "wb"))            
+        print "Setting up Q learning matrix..."        
         row_names = np.empty(0)       
-        for combination in itertools.product(actions, lights, actions, actions, actions, Xlist, Ylist, headings): #T, 
-            #initialize as zeros            
-            row_name = ', '.join(map(str, list(combination)))          
+        for combination in itertools.product(actions, lights, actions, actions, actions, 
+                                             headings):  #time_list
+            row_name = '*'.join(map(str, list(combination)))          
             row_names = np.append(row_names,row_name)
+         #   c.writerows(row_names) 
             
-        self.Q = pd.DataFrame(index=row_names, columns=actions)
-        self.Q = self.Q.fillna(0)
-        self.Qprime = self.Q
+        col_labels = copy.deepcopy(actions)
+        col_labels[0] = str(col_labels[0])
+        self.Q = pd.DataFrame(0, index=row_names, columns=col_labels)
+        self.prev_state = None
+        self.prev_action = None
+        self.prev_reward = None
+        
         print "DONE; start learning..."
+
 
 
     def reset(self, destination=None):
@@ -47,34 +57,76 @@ class LearningAgent(Agent):
         # TODO: Prepare for a new trip; reset any variables here, if required
 
     def update(self, t):
+             
         # Gather inputs
         self.next_waypoint = self.planner.next_waypoint()  # from route planner, also displayed by simulator
         deadline = self.env.get_deadline(self) #Current dealine remaining (in time steps)        
         inputs = self.env.sense(self)  #Need to determine traffic light status, presence of cars
+        light = inputs['light']
+        oncoming = inputs['oncoming']
+        left = inputs['left']
+        right = inputs['right']        
         state = self.env.agent_states[self]
+        heading = state['heading']
         
         #May want to rework these distance measures because the map wraps around
-        Xdist = self.planner.destination[0] - state['location'][0]  #Get delta X distance
-        Ydist = self.planner.destination[1] - state['location'][1]  #Get delta Y distance        
-        heading = state['heading']
-
-        # TODO: Update state
-        # state rows based on this coding system (next_waypoint, light_status, oncoming, left, right, Xdist,
-        #                                         Ydist, heading, #steps 'til deadline, )         
-                
-        #current_state = ', '.join(self.next_waypoint, inputs, Xdist, Ydist, heading) #time left to reach desination
-        #deadline, inputs, Xdist, Ydist, heading)
+        #Xdist = self.planner.destination[0] - state['location'][0]  #Get delta X distance
+        #Ydist = self.planner.destination[1] - state['location'][1]  #Get delta Y distance        
+        #time_buffer = self.env.t - (abs(Xdist) + abs(Ydist))        
         
+        
+        # TODO: Update state
+        #states use this coding system [next_waypoint, light_status, oncoming, left, right, & heading]       
+        current_state = '*'.join(map(str, list((self.next_waypoint, light, oncoming, 
+                                               left, right, heading)))) #time left to reach desination
+        
+        #Update Q matrix now that we know the future state (s')
+        #current_state is equal to future state (s') from previous iteration
+        if (self.prev_state != None):  
+            print "Made it to Q_matrix update"  #debug   
+            max_Qprime = max (self.Q.loc[current_state, ]) #Utility of next state (s')
+            #Utility of state (s) = Q(s,a) = R(s,a) + gamma * max,a' [Q(s',a')]            
+            print "Made it past max_Qprime calculation"  #debug
+            utility = self.prev_reward + self.gamma * max_Qprime
+            #Learning rate update formula: V <-- (1 - alpha) * V + alpha * X            
+            print "Made it past utility calculation"  #debug
+            s = str(self.prev_state)            
+            a = str(self.prev_action)
+            self.Q.loc[s, a] = (1 - self.alpha) * self.Q.loc[s, a] + self.alpha * (utility)        
+            print "Made it past Q update calculation"  #debug
+                    
         # TODO: Select action according to your policy
         # Part I of assignment tells me to randomly select an action        
         action = random.choice(self.env.valid_actions)
+        self.prev_action = action #Remember your previous action (a)
 
         # Execute action and get reward
         reward = self.env.act(self, action)
+        self.prev_state = current_state  #Remember what state you came from (s)
+        self.prev_reward = reward #This is to remember the R(s,a) value for calculating Q(s,a)
+                                  #Can't do Q(s,a) update until future state (s') is known
 
         # TODO: Learn policy based on state, action, reward
 
-        print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, Xdist = {}, Ydist = {}, heading = {}, reward = {}".format(deadline, inputs, action, Xdist, Ydist, heading, reward)  # [debug]
+        print "LearningAgent.update(): deadline = {}, current_state = {}, action = {}, reward = {}".format(deadline, 
+                                         current_state, action, reward)  # [debug]
+        
+    def get_future_state(self, t):
+        #print "Environment.step(): t = {}".format(self.t)  # [debug]
+
+        # Update traffic lights
+        for intersection, traffic_light in self.env.intersections.iteritems():
+            traffic_light.update(self.t)
+
+        # Update agents
+        for agent in self.agent_states.iterkeys():
+            agent.update(self.t)
+
+        if self.primary_agent is not None:
+            if self.enforce_deadline and self.agent_states[self.primary_agent]['deadline'] <= 0:
+                self.done = True
+                print "Environment.reset(): Primary agent could not reach destination within deadline!"
+            self.agent_states[self.primary_agent]['deadline'] -= 1
 
 
 def run():
