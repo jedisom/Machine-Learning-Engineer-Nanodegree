@@ -22,10 +22,10 @@ The following problem description was provided by Udacity to give background on 
 
 ## Language and libraries required
 
-Python 2.7
-Numpy 1.10
-Sklearn 0.17
-iPython Notebook (with iPython 4.0)
+- Python 2.7
+- Numpy 1.10
+- Sklearn 0.17
+- iPython Notebook (with iPython 4.0)
 
 ## Reviewing the completed project
 The ipython notebook `student_intervention.ipynb` contains the completed project file with working code.  to view my version of the completed the ipython notebook, open `student_intervention.ipynb`.  `Student Intervention Project Answers.pdf` contains the same answers to the questions given in .ipynb file, but in a PDF format.
