@@ -70,13 +70,14 @@ For help with installation, it is best to reach out to the pygame community [hel
  
 ## Run
 
-Fork/clone this repository to your local computer.  Make sure you are in the top-level project directory `smartcab/` (that contains this README). Then run:
+Fork/clone this repository to your local computer.  
+>Make sure you are in the top-level project directory `smartcab/` (that contains this README). Then run:
 
-```python smartcab/agent.py```
+>```python smartcab/agent.py```
 
-OR:
+>OR:
 
-```python -m smartcab.agent```
+>```python -m smartcab.agent```
 
 ##MIT License
 
