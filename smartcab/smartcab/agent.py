@@ -43,10 +43,11 @@ class LearningAgent(Agent):
             
         col_labels = copy.deepcopy(actions)
         col_labels[0] = str(col_labels[0])
-        self.Q = pd.DataFrame(random.uniform(0,10), index=row_names, columns=col_labels)
+        self.Q = pd.DataFrame(0, index=row_names, columns=col_labels)
         #initialize Q matrix to have argmax actions equal to planner supplied actions
-        #for row in list(self.Q.index):
-        #    recommended_action = row.split("*")[0]
+        for row in list(self.Q.index):
+            recommended_action = row.split("*")[0]
+            self.Q.loc[row, recommended_action] = 3.5
             
         self.prev_state = None
         self.prev_action = None
