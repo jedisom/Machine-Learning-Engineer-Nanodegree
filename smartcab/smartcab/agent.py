@@ -2,7 +2,7 @@ import random
 import numpy as np
 import pandas as pd
 import itertools
-import os, csv, copy
+import copy
 from environment import Agent, Environment
 from planner import RoutePlanner
 from simulator import Simulator
@@ -16,38 +16,31 @@ class LearningAgent(Agent):
         self.color = 'red'  # override color
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         # TODO: Initialize any additional variables here
-        self.gamma = 0.5 #discount rate
-        self.alpha = 0.5 #learning rate
+        self.gamma = 0.5 #discount rate; arbitrarily selected this value
+        self.alpha = 0.5 #learning rate; arbitrarily selected this value
     
         #CREATE STARTING Q LEARNING MATRIX
-        #Calculate variables determining the matrix' size
+        print "Setting up Q learning matrix and tracking variables..."          
+        #Set variables/lists determining the Q matrix' size
         actions = self.env.valid_actions
         lights = ['green', 'red']
-        #max_L1_dist =  self.env.grid_size[0] * self.env.grid_size[0]       
-        #max_time_buffer = max_L1_dist * 5 - max_L1_dist
-        #time_list = np.arange(max_time_buffer)                
-        #headings = self.env.valid_headings
         
         #create Q matrix
         #states/rows use this coding system [next_waypoint, light_status, oncoming, left, right]
-        #only do this once and write it to csv file to be read later   
-        #if (os.path.isfile("row_names.csv") == False):
-        #    c = csv.writer(open("row_names.csv", "wb"))            
-        print "Setting up Q learning matrix..."        
         row_names = np.empty(0)       
         for combination in itertools.product(actions, lights, actions, actions, actions):  #time_list
             row_name = '*'.join(map(str, list(combination)))          
             row_names = np.append(row_names,row_name)
-         #   c.writerows(row_names) 
-            
+       
+        #initialize Q matrix to have argmax actions equal to planner supplied actions
         col_labels = copy.deepcopy(actions)
         col_labels[0] = str(col_labels[0])
-        self.Q = pd.DataFrame(0, index=row_names, columns=col_labels)
-        #initialize Q matrix to have argmax actions equal to planner supplied actions
+        self.Q = pd.DataFrame(0, index=row_names, columns=col_labels)        
         for row in list(self.Q.index):
             recommended_action = row.split("*")[0]
             self.Q.loc[row, recommended_action] = 3.5
             
+        #Initialize variables to keep track of previous state, action and reward
         self.prev_state = None
         self.prev_action = None
         self.prev_reward = None
@@ -107,7 +100,7 @@ class LearningAgent(Agent):
         print "LearningAgent.update(): deadline = {}, current_state = {}, action = {}, reward = {}".format(deadline, 
                                          current_state, action, reward)  # [debug]
         
-    #My implementation didn't use this Uadacity given function
+    #My implementation didn't use this Udacity given function
     #def get_future_state(self, t):
         #print "Environment.step(): t = {}".format(self.t)  # [debug]
 
