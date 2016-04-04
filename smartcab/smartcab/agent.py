@@ -43,14 +43,16 @@ class LearningAgent(Agent):
             
         col_labels = copy.deepcopy(actions)
         col_labels[0] = str(col_labels[0])
-        self.Q = pd.DataFrame(0, index=row_names, columns=col_labels)
+        self.Q = pd.DataFrame(random.uniform(0,10), index=row_names, columns=col_labels)
+        #initialize Q matrix to have argmax actions equal to planner supplied actions
+        #for row in list(self.Q.index):
+        #    recommended_action = row.split("*")[0]
+            
         self.prev_state = None
         self.prev_action = None
         self.prev_reward = None
         
         print "DONE; start learning..."
-
-
 
     def reset(self, destination=None):
         self.planner.route_to(destination)
@@ -67,37 +69,34 @@ class LearningAgent(Agent):
         left = inputs['left']
         right = inputs['right']        
         state = self.env.agent_states[self]
-        heading = state['heading']
-        
-        #May want to rework these distance measures because the map wraps around
-        #Xdist = self.planner.destination[0] - state['location'][0]  #Get delta X distance
-        #Ydist = self.planner.destination[1] - state['location'][1]  #Get delta Y distance        
-        #time_buffer = self.env.t - (abs(Xdist) + abs(Ydist))        
-        
+        heading = state['heading']              
         
         # TODO: Update state
         #states use this coding system [next_waypoint, light_status, oncoming, left, right, & heading]       
         current_state = '*'.join(map(str, list((self.next_waypoint, light, oncoming, 
                                                left, right, heading)))) #time left to reach desination
         
+        # TODO: Learn policy based on state, action, reward
         #Update Q matrix now that we know the future state (s')
         #current_state is equal to future state (s') from previous iteration
         if (self.prev_state != None):  
-            print "Made it to Q_matrix update"  #debug   
             max_Qprime = max (self.Q.loc[current_state, ]) #Utility of next state (s')
             #Utility of state (s) = Q(s,a) = R(s,a) + gamma * max,a' [Q(s',a')]            
-            print "Made it past max_Qprime calculation"  #debug
             utility = self.prev_reward + self.gamma * max_Qprime
             #Learning rate update formula: V <-- (1 - alpha) * V + alpha * X            
-            print "Made it past utility calculation"  #debug
             s = str(self.prev_state)            
             a = str(self.prev_action)
             self.Q.loc[s, a] = (1 - self.alpha) * self.Q.loc[s, a] + self.alpha * (utility)        
-            print "Made it past Q update calculation"  #debug
                     
         # TODO: Select action according to your policy
         # Part I of assignment tells me to randomly select an action        
-        action = random.choice(self.env.valid_actions)
+        #action = random.choice(self.env.valid_actions)
+        
+        # Part II of the assignment telss me to pick the action with the highest Q value in that state        
+        action = self.Q.loc[current_state, ].idxmax(axis=0)
+        if action == "None":
+            action = None
+        
         self.prev_action = action #Remember your previous action (a)
 
         # Execute action and get reward
@@ -105,8 +104,6 @@ class LearningAgent(Agent):
         self.prev_state = current_state  #Remember what state you came from (s)
         self.prev_reward = reward #This is to remember the R(s,a) value for calculating Q(s,a)
                                   #Can't do Q(s,a) update until future state (s') is known
-
-        # TODO: Learn policy based on state, action, reward
 
         print "LearningAgent.update(): deadline = {}, current_state = {}, action = {}, reward = {}".format(deadline, 
                                          current_state, action, reward)  # [debug]
