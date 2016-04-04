@@ -16,8 +16,8 @@ class LearningAgent(Agent):
         self.color = 'red'  # override color
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         # TODO: Initialize any additional variables here
-        self.gamma = 0.5 #discount rate; arbitrarily selected this value
-        self.alpha = 0.5 #learning rate; arbitrarily selected this value
+        self.gamma = 0.1 #discount rate; arbitrarily selected this value
+        self.alpha = 0.8 #learning rate; arbitrarily selected this value
     
         #CREATE STARTING Q LEARNING MATRIX
         print "Setting up Q learning matrix and tracking variables..."          
@@ -44,6 +44,7 @@ class LearningAgent(Agent):
         self.prev_state = None
         self.prev_action = None
         self.prev_reward = None
+        self.net_reward = 0
         
         print "DONE; start learning..."
 
@@ -61,7 +62,7 @@ class LearningAgent(Agent):
         oncoming = inputs['oncoming']
         left = inputs['left']
         right = inputs['right']        
-        state = self.env.agent_states[self]             
+        #state = self.env.agent_states[self]             
         
         # TODO: Update state
         #states use this coding system [next_waypoint, light_status, oncoming, left, right]       
@@ -93,12 +94,13 @@ class LearningAgent(Agent):
 
         # Execute action and get reward
         reward = self.env.act(self, action)
+        self.net_reward += reward
         self.prev_state = current_state  #Remember what state you came from (s)
         self.prev_reward = reward #This is to remember the R(s,a) value for calculating Q(s,a)
                                   #Can't do Q(s,a) update until future state (s') is known
 
-        print "LearningAgent.update(): deadline = {}, current_state = {}, action = {}, reward = {}".format(deadline, 
-                                         current_state, action, reward)  # [debug]
+        print "LearningAgent.update(): deadline = {}, current_state = {}, action = {}, reward = {}, net_reward = {}".format(deadline, 
+                                         current_state, action, reward, self.net_reward)  # [debug]
         
     #My implementation didn't use this Udacity given function
     #def get_future_state(self, t):
@@ -128,8 +130,8 @@ def run():
     e.set_primary_agent(a, enforce_deadline=False)  # set agent to track
 
     # Now simulate it
-    sim = Simulator(e, update_delay=0.5)  # reduce update_delay to speed up simulation
-    sim.run(n_trials=10)  # press Esc or close pygame window to quit
+    sim = Simulator(e, update_delay=0.01)  # reduce update_delay to speed up simulation
+    sim.run(n_trials=100)  # press Esc or close pygame window to quit
 
 
 if __name__ == '__main__':
