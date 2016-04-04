@@ -107,22 +107,23 @@ class LearningAgent(Agent):
         print "LearningAgent.update(): deadline = {}, current_state = {}, action = {}, reward = {}".format(deadline, 
                                          current_state, action, reward)  # [debug]
         
-    def get_future_state(self, t):
+    #My implementation didn't use this Uadacity given function
+    #def get_future_state(self, t):
         #print "Environment.step(): t = {}".format(self.t)  # [debug]
 
         # Update traffic lights
-        for intersection, traffic_light in self.env.intersections.iteritems():
-            traffic_light.update(self.t)
+    #    for intersection, traffic_light in self.env.intersections.iteritems():
+    #        traffic_light.update(self.t)
 
         # Update agents
-        for agent in self.agent_states.iterkeys():
-            agent.update(self.t)
+    #    for agent in self.agent_states.iterkeys():
+    #        agent.update(self.t)
 
-        if self.primary_agent is not None:
-            if self.enforce_deadline and self.agent_states[self.primary_agent]['deadline'] <= 0:
-                self.done = True
-                print "Environment.reset(): Primary agent could not reach destination within deadline!"
-            self.agent_states[self.primary_agent]['deadline'] -= 1
+    #    if self.primary_agent is not None:
+    #        if self.enforce_deadline and self.agent_states[self.primary_agent]['deadline'] <= 0:
+    #            self.done = True
+    #            print "Environment.reset(): Primary agent could not reach destination within deadline!"
+    #        self.agent_states[self.primary_agent]['deadline'] -= 1
 
 
 def run():
