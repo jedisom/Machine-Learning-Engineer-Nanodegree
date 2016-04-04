@@ -26,17 +26,16 @@ class LearningAgent(Agent):
         #max_L1_dist =  self.env.grid_size[0] * self.env.grid_size[0]       
         #max_time_buffer = max_L1_dist * 5 - max_L1_dist
         #time_list = np.arange(max_time_buffer)                
-        headings = self.env.valid_headings
+        #headings = self.env.valid_headings
         
         #create Q matrix
-        #states/rows use this coding system [next_waypoint, light_status, oncoming, left, right, & heading]
+        #states/rows use this coding system [next_waypoint, light_status, oncoming, left, right]
         #only do this once and write it to csv file to be read later   
         #if (os.path.isfile("row_names.csv") == False):
         #    c = csv.writer(open("row_names.csv", "wb"))            
         print "Setting up Q learning matrix..."        
         row_names = np.empty(0)       
-        for combination in itertools.product(actions, lights, actions, actions, actions, 
-                                             headings):  #time_list
+        for combination in itertools.product(actions, lights, actions, actions, actions):  #time_list
             row_name = '*'.join(map(str, list(combination)))          
             row_names = np.append(row_names,row_name)
          #   c.writerows(row_names) 
@@ -69,13 +68,12 @@ class LearningAgent(Agent):
         oncoming = inputs['oncoming']
         left = inputs['left']
         right = inputs['right']        
-        state = self.env.agent_states[self]
-        heading = state['heading']              
+        state = self.env.agent_states[self]             
         
         # TODO: Update state
-        #states use this coding system [next_waypoint, light_status, oncoming, left, right, & heading]       
+        #states use this coding system [next_waypoint, light_status, oncoming, left, right]       
         current_state = '*'.join(map(str, list((self.next_waypoint, light, oncoming, 
-                                               left, right, heading)))) #time left to reach desination
+                                               left, right)))) #time left to reach desination
         
         # TODO: Learn policy based on state, action, reward
         #Update Q matrix now that we know the future state (s')
