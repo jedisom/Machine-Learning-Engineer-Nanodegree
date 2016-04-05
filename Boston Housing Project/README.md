@@ -24,10 +24,10 @@ This was the first project in the nanodegree program to get us started.  The fir
  
 ## Language and libraries required
 
-Python 2.7
-Numpy 1.10
-Sklearn 0.17
-iPython Notebook (with iPython 4.0)
+- Python 2.7
+- Numpy 1.10
+- Sklearn 0.17
+- iPython Notebook (with iPython 4.0)
 
 ## Reviewing the completed project
 The ipython notebook `boston_housing.ipynb` contains the completed project file with working code.  To view my version of the completed the ipython notebook, open `boston_housing.ipynb`.  `Boston_Housing Answers.pdf` contains the same answers to the questions given in .ipynb file, but in a PDF format.
