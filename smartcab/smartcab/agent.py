@@ -41,6 +41,7 @@ class LearningAgent(Agent):
             self.Q.loc[row, recommended_action] = 3.5
             
         #Initialize variables to keep track of previous state, action and reward
+        self.state = None
         self.prev_state = None
         self.prev_action = None
         self.prev_reward = None
@@ -68,6 +69,7 @@ class LearningAgent(Agent):
         #states use this coding system [next_waypoint, light_status, oncoming, left, right]       
         current_state = '*'.join(map(str, list((self.next_waypoint, light, oncoming, 
                                                left, right)))) #time left to reach desination
+        self.state = current_state
         
         # TODO: Learn policy based on state, action, reward
         #Update Q matrix now that we know the future state (s')
@@ -100,7 +102,7 @@ class LearningAgent(Agent):
                                   #Can't do Q(s,a) update until future state (s') is known
 
         print "LearningAgent.update(): deadline = {}, current_state = {}, action = {}, reward = {}, net_reward = {}".format(deadline, 
-                                         current_state, action, reward, self.net_reward)  # [debug]
+                                         self.state, action, reward, self.net_reward)  # [debug]
         
     #My implementation didn't use this Udacity given function
     #def get_future_state(self, t):
