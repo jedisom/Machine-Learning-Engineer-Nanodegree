@@ -32,9 +32,12 @@ tidy_data = pd.DataFrame(columns = columns)
 #Cycle through all rows with data and input data into tidy_data dataframe
 row = 2
 while xl.ActiveSheet.Cells(row, 1).Text != u'':
-    print row    
-    d = xl.ActiveSheet.Cells(row,1).Text
-    t = xl.ActiveSheet.Cells(row,2).Text
+    #print row    
+    date_text = xl.ActiveSheet.Cells(row,1).Text
+    date_int = map(int, date_text.split("/"))
+    d = dt.date(date_int[0], date_int[1], date_int[2])
+    #d = xl.ActiveSheet.Cells(row,1).NumberFormat = "yyyy, mm, dd"
+    t = int(xl.ActiveSheet.Cells(row,2).Text)
     r = xl.ActiveSheet.Cells(row,3).Text
     tidy_data = tidy_data.append({'date': d, 'time_spent': t, 'text_read': r}, 
                                  ignore_index=True)
