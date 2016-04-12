@@ -44,3 +44,33 @@ while xl.ActiveSheet.Cells(row, 1).Text != u'':
     row = row + 1                               
 
 print tidy_data.head()
+test = tidy_data.head()
+
+###
+#Clean up text_read column
+###
+
+import string
+import sys
+import unicodedata
+#(1) Remove numbers and whitespace
+#http://stackoverflow.com/questions/12851791/removing-numbers-from-string
+#http://stackoverflow.com/questions/11066400/remove-punctuation-from-unicode-formatted-strings
+
+exclude = unicode(string.digits) + '\n' + ' '
+#test['text_read'][0].translate({ord(n): None for n in exclude})
+test2 = test['text_read'].map(lambda x: x.translate({ord(n): None for n in exclude}))
+
+#(2) Remove punctuation
+punctuation = dict.fromkeys(i for i in xrange(sys.maxunicode)
+                      if unicodedata.category(unichr(i)).startswith('P'))
+test3 = test2.map(lambda x: x.translate(punctuation))
+
+#(3) Remove unicode text u'\u200b.  It's essentially a zero width blank character 
+#    that is repeatedly found in the text.  It would change character counts, etc.
+test4 = test3.map(lambda x: x.replace(u'\u200b',''))
+
+
+
+
+
