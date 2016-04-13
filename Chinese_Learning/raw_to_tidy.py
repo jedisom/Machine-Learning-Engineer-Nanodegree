@@ -58,8 +58,10 @@ def clean_up_Unicode_text(df):
     
     #(3) Remove unicode text u'\u200b.  It's essentially a zero width blank character 
     #    that is repeatedly found in the text.  It would change character counts, etc.
+    #    Also remove u'\u2500'; it's a dash that was missed in the punctuation above.
     print ("Removing u'\u200b', a zero width blank character...")    
     df.loc[:,'text_read'] = df.loc[:,'text_read'].map(lambda x: x.replace(u'\u200b',''))
+    df.loc[:,'text_read'] = df.loc[:,'text_read'].map(lambda x: x.replace(u'\u2500',''))
     
     #Add columns to dataframe for "text_read" length & seconds per character
     df.loc[:,'text_length'] = df.loc[:,'text_read'].map(lambda x: int(len(x)))
