@@ -69,6 +69,9 @@ def clean_up_Unicode_text(df):
     
     print ('Data is tidy and ready for analysis')
     return df
+    
+    #export to to .csv check against hand written character counts (debugging)
+    #df.loc[:,('date', 'text_length')].to_csv('tidy.csv', header = True)
 
 def tidy_up_data(filename):
     
