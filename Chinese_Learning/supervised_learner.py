@@ -11,5 +11,19 @@ will read traditional Chinese characters measured in seconds per character.
 
 from raw_to_tidy import tidy_up_data
 
+#Import and clean up data
 raw_filename = 'Raw_Chinese_Learning_Log.xlsx'
 tidy_data = tidy_up_data(raw_filename)
+
+#Create features to be used in supervised learning
+#Can't use time spent or text_length as learning features because I had a habit
+#of studying for 1/2 a day and the algorithm would 'learn' that quickly.  That's
+#not what I want to 'learn'.  I want to know if my reading speed could have been
+#predicted based on how far along the learning curve I am (days read, cumulative
+#time spent, cumulative characters read, etc.) as well as other features in the
+#text data like (average days since characters in the text were last read, etc.)
+X = tidy_data.loc[:, :'text_length']
+Y = tidy_data.loc[:, 'secPc']
+
+#Split dataset into training and test sets
+
