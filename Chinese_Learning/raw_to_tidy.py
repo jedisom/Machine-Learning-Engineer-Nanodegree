@@ -62,6 +62,7 @@ def clean_up_Unicode_text(df):
     print ("Removing u'\u200b', a zero width blank character...")    
     df.loc[:,'text_read'] = df.loc[:,'text_read'].map(lambda x: x.replace(u'\u200b',''))
     df.loc[:,'text_read'] = df.loc[:,'text_read'].map(lambda x: x.replace(u'\u2500',''))
+    df.loc[:,'text_read'] = df.loc[:,'text_read'].map(lambda x: x.replace(u'\xa0',''))
     
     #Add columns to dataframe for "text_read" length & seconds per character
     df.loc[:,'text_length'] = df.loc[:,'text_read'].map(lambda x: int(len(x)))

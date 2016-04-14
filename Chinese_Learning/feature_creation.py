@@ -17,12 +17,17 @@ def Add_cumsums(df):
     
     return df
     
-#def char_counts(df):
+def char_counts(df):
     #This function creates columns for each character and counts the times it
     #appears during each study session/day
     
-#    import nltk.tokenize
-    #Need to create corpus of characters found in all text_read
+    #Need to create corpus of characters found in all text_read    
+    #from sklearn.feature_extraction.text import CountVectorizer
+    #vectorizer = CountVectorizer(decode_error = 'strict', analyzer = 'char')
+    #corpus = df.loc[:,'text_read']
+    #dtm = vectorizer.fit_transform(corpus)
+
+    return df    
     
 def create_features(df):
     
