@@ -27,5 +27,11 @@ X_raw = tidy_data.loc[:, :'text_length']
 X = create_features(X_raw)
 Y = tidy_data.loc[:, 'secPc']
 
+#Print out some summary statistics
+print 'There are %d total records in the dataset' % X.shape[0]
+print 'The dataset includes a total of %d minutes of study time' % X.iloc[973,4]
+print 'There are %d total characters read in the dataset' % X.iloc[973,5]
+mean_speed = round((X.iloc[973,4] * 60.0) / X.iloc[973,5], 3)
+print 'The mean reading speed over the entire dataset is %r seconds per character' % mean_speed
 #Split dataset into training and test sets
 
