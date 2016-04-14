@@ -10,6 +10,7 @@ will read traditional Chinese characters measured in seconds per character.
 """
 
 from raw_to_tidy import tidy_up_data
+from feature_creation import create_features
 
 #Import and clean up data
 raw_filename = 'Raw_Chinese_Learning_Log.xlsx'
@@ -22,7 +23,8 @@ tidy_data = tidy_up_data(raw_filename)
 #predicted based on how far along the learning curve I am (days read, cumulative
 #time spent, cumulative characters read, etc.) as well as other features in the
 #text data like (average days since characters in the text were last read, etc.)
-X = tidy_data.loc[:, :'text_length']
+X_raw = tidy_data.loc[:, :'text_length']
+X = create_features(X_raw)
 Y = tidy_data.loc[:, 'secPc']
 
 #Split dataset into training and test sets

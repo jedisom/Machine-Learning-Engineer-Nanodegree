@@ -23,3 +23,9 @@ def Add_cumsums(df):
     
 #    import nltk.tokenize
     #Need to create corpus of characters found in all text_read
+    
+def create_features(df):
+    
+    new_df = Add_cumsums(df)
+    #new_df = char_counts(new_df)
+    return new_df
