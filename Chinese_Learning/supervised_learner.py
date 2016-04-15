@@ -15,6 +15,7 @@ from math import log
 from sklearn.cross_validation import train_test_split
 import numpy as np
 import matplotlib.pyplot as plt
+
 #import plotly.plotly as py
 
 #Import and clean up data
@@ -58,7 +59,36 @@ plt.xlabel('Cumulative Time Spent Reading')
 plt.title('Chinese Character Reading Speed Scatter Plot')
 plt.show()  
 
+#Create baseline model fit (linear regression of ln(y))
+from sklearn import linear_model
+from sklearn.metrics import mean_squared_error, make_scorer
+from sklearn import cross_validation
+#from sklearn.grid_search import GridSearchCV
 
+#http://stackoverflow.com/questions/30813044/sklearn-found-arrays-with-inconsistent-numbers-of-samples-when-calling-linearre
+n_train = X_train.shape[0]
+X_train_baseline = X_train.loc[:, 'cum_time'].reshape((n_train,1))
+clf = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
+clf.fit (X_train_baseline, y_train)
+print clf.coef_
+print clf.intercept_
+
+#RSE = make_scorer(mean_squared_error, X = X_train_baseline, y = y_train)
+#scores = cross_validation.cross_val_score(clf, X_train_baseline, y_train, cv=5)                          
+#grid = GridSearchCV(linear_model.LinearRegression, scoring = RSE)
+
+#show linear fit on cumulative time scatter plot
+fit_line_X = [min(X_train_baseline), max(X_train_baseline)]
+fit_line_y = clf.predict(fit_line_X)
+
+plt.plot(fit_line_X, fit_line_y, "k", X_train.loc[:, 'cum_time'], y_train, "o")
+plt.ylabel('ln(Seconds per Character)')
+plt.xlabel('Cumulative Time Spent Reading')
+plt.title('Baseline Fit to Chinese Characters Reading Speed Experienc Curve')
+m = str(round(clf.coef_[0],9))
+b = str(round(clf.intercept_,4))
+plt.text(7500, 3.5, (r'y = ' + m + r' * x + ' + b))
+plt.show()  
 
 
 # draw vertical line from (70,100) to (70, 250)
