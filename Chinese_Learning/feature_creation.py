@@ -34,6 +34,7 @@ def char_counts(df):
     
     n = df.shape[0]
     df.loc[:,'percent_seen'] = 0.0
+    df.loc[:,'mean_days_since_seen'] = 0.0
     for i in range(1, n):   #cycle through all rows except first row
         #Get percent of characters not seen in text so far        
         prior_non_zero = dtm[:i,:].nonzero()    #Find non-zero values in sparse matrix in (i-1) records
