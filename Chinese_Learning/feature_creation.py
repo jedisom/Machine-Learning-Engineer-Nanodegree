@@ -9,6 +9,8 @@ algorithm to more accurately predict the seconds per character metric.
 """
 
 def Add_cumsums(df):
+    print 'Calculating cumulative sums...'    
+    
     #Add cumulative time read so far    
     df.loc[:,'cum_time'] = df.loc[:,'time_spent'].cumsum(axis = 0)
     
@@ -20,6 +22,8 @@ def Add_cumsums(df):
 def char_counts(df):
     #This function creates columns for each character and counts the times it
     #appears during each study session/day
+    
+    print 'Calculating time since character last read, etc...'    
     
     #Need to create corpus of characters found in all text_read    
     from sklearn.feature_extraction.text import CountVectorizer

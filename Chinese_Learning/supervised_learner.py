@@ -31,7 +31,7 @@ tidy_data = tidy_up_data(raw_filename)
 #time spent, cumulative characters read, etc.) as well as other features in the
 #text data like (average days since characters in the text were last read, etc.)
 X_raw = tidy_data.loc[:, :'text_length']
-X = create_features(X_raw)
+X = create_features(X_raw.copy(deep = True))
 
 #take log in order to deal with exponentially larger y data at beginning of dataset
 y = tidy_data.loc[:, 'secPc'].apply(log)
@@ -48,26 +48,25 @@ print 'The mean reading speed over the entire dataset is %r seconds per characte
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
 
 #Create initial test set visualization; baseline learning curve model
-plt.plot(X_train.loc[:, 'cum_char'], y_train, "o")
-plt.ylabel('ln(Seconds per Character)')
-plt.xlabel('Cumulative Characters Read')
-plt.title('Chinese Character Reading Speed Scatter Plot')
-plt.show()  
+#plt.plot(X_train.loc[:, 'cum_char'], y_train, "o")
+#plt.ylabel('ln(Seconds per Character)')
+#plt.xlabel('Cumulative Characters Read')
+#plt.title('Chinese Character Reading Speed Scatter Plot')
+#plt.show()  
 
-plt.plot(X_train.loc[:, 'cum_time'], y_train, "o")
-plt.ylabel('ln(Seconds per Character)')
-plt.xlabel('Cumulative Time Spent Reading')
-plt.title('Chinese Character Reading Speed Scatter Plot')
-plt.show()  
+#plt.plot(X_train.loc[:, 'cum_time'], y_train, "o")
+#plt.ylabel('ln(Seconds per Character)')
+#plt.xlabel('Cumulative Time Spent Reading')
+#plt.title('Chinese Character Reading Speed Scatter Plot')
+#plt.show()  
 
-#Create baseline model fit (linear regression of ln(y))
+###Create baseline model fit (linear regression of ln(y))
 from sklearn import linear_model
-#from sklearn.metrics import mean_squared_error, make_scorer
 from sklearn import cross_validation
+#from sklearn.metrics import mean_squared_error, make_scorer
 #from sklearn.grid_search import GridSearchCV
 
 #http://stackoverflow.com/questions/30813044/sklearn-found-arrays-with-inconsistent-numbers-of-samples-when-calling-linearre
-
 n_train = X_train.shape[0]
 X_train_baseline = X_train.loc[:, 'cum_time'].reshape((n_train,1))
 clf = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
@@ -75,9 +74,6 @@ random.seed = 1
 baseline_scores = cross_validation.cross_val_score(clf, X_train_baseline, y_train, cv=10)  
 print("Baseline R^2 Cross-Validation Mean: %0.4f" % baseline_scores.mean())
 clf.fit (X_train_baseline, y_train)
-
-#print clf.coef_
-#print clf.intercept_
 
 #show linear fit on cumulative time scatter plot
 fit_line_X = [min(X_train_baseline), max(X_train_baseline)]
@@ -93,13 +89,27 @@ plt.text(7500, 3.5, (r'y = ' + m + r' * x + ' + b))
 plt.text(10000, 3.3, (r'R^2 = %0.4f' %baseline_scores.mean()))
 plt.show()  
 
+###Improve on baseliine by using features created from the text
+
+#sklearn.ensemble.RandomForestClassifier
+#sklearn.neural_network.MLPRegressor
+#sklearn.linear_model.BayesianRidge
+#sklearn.tree.DecisionTreeRegressor
+#sklearn.linear_model.Ridge
+#sklearn.linear_model.LinearRegression
+
+
+
 #RSE = make_scorer(mean_squared_error, X = X_train_baseline, y = y_train)                          
-#grid = GridSearchCV(linear_model.LinearRegression, scoring = RSE)
+LinReg = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
+random.seed = 1
+X_train_counts = X_train.loc[:, ('cum_time', 'percent_seen', 'mean_days_since_seen')]
+char_count_scores = cross_validation.cross_val_score(LinReg, X_train_counts, y_train, cv=10)  
+print("Char Count R^2 Cross-Validation Mean: %0.4f" % char_count_scores.mean())
+LinReg.fit (X_train_counts, y_train)
+fit_line_y = LinReg.predict(X_train_counts)
+plt.plot(X_train.loc[:, 'cum_time'], fit_line_y, "x")
 
-# draw vertical line from (70,100) to (70, 250)
-#plt.plot([70, 70], [100, 250], 'k-', lw=2)
+#LinRegGrid = GridSearchCV(linear_model.LinearRegression)
 
-# draw diagonal line from (70, 90) to (90, 200)
-#plt.plot([70, 90], [90, 200], 'k-')
 
-#plot_url = py.plot_mpl(line, filename='mpl-docs/add-line')
