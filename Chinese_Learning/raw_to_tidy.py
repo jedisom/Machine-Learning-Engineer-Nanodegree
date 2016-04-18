@@ -25,11 +25,9 @@ def get_Excel_data(filename):
     print ('Extracting raw data from Excel file...')    
     row = 2
     while xl.ActiveSheet.Cells(row, 1).Text != u'':
-        #print row    
         date_text = xl.ActiveSheet.Cells(row,1).Text
         date_int = map(int, date_text.split("/"))
         d = dt.date(date_int[0], date_int[1], date_int[2])
-        #d = xl.ActiveSheet.Cells(row,1).NumberFormat = "yyyy, mm, dd"
         t = int(xl.ActiveSheet.Cells(row,2).Text)
         r = xl.ActiveSheet.Cells(row,3).Text
         Excel_data = Excel_data.append({'date': d, 'time_spent': t, 'text_read': r}, 

@@ -17,19 +17,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 
-#import plotly.plotly as py
-
 #Import and clean up data
 raw_filename = 'Raw_Chinese_Learning_Log.xlsx'
 tidy_data = tidy_up_data(raw_filename)
 
 #Create features to be used in supervised learning
-#Can't use time spent or text_length as learning features because I had a habit
-#of studying for 1/2 a day and the algorithm would 'learn' that quickly.  That's
-#not what I want to 'learn'.  I want to know if my reading speed could have been
-#predicted based on how far along the learning curve I am (days read, cumulative
-#time spent, cumulative characters read, etc.) as well as other features in the
-#text data like (average days since characters in the text were last read, etc.)
 X_raw = tidy_data.loc[:, :'text_length']
 X = create_features(X_raw.copy(deep = True))
 
@@ -63,8 +55,6 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 ###Create baseline model fit (linear regression of ln(y))
 from sklearn import linear_model
 from sklearn import cross_validation
-#from sklearn.metrics import mean_squared_error, make_scorer
-#from sklearn.grid_search import GridSearchCV
 
 #http://stackoverflow.com/questions/30813044/sklearn-found-arrays-with-inconsistent-numbers-of-samples-when-calling-linearre
 n_train = X_train.shape[0]
@@ -90,15 +80,14 @@ plt.text(10000, 3.3, (r'R^2 = %0.4f' %baseline_scores.mean()))
 plt.show()  
 
 ###Improve on baseliine by using features created from the text
-
+#from sklearn.grid_search import GridSearchCV
 #sklearn.ensemble.RandomForestClassifier
 #sklearn.neural_network.MLPRegressor
 #sklearn.linear_model.BayesianRidge
 #sklearn.tree.DecisionTreeRegressor
+#sklearn.svm.SVR
 #sklearn.linear_model.Ridge
 #sklearn.linear_model.LinearRegression
-
-
 
 #RSE = make_scorer(mean_squared_error, X = X_train_baseline, y = y_train)                          
 LinReg = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
@@ -106,6 +95,8 @@ random.seed = 1
 X_train_counts = X_train.loc[:, ('cum_time', 'percent_seen', 'mean_days_since_seen')]
 char_count_scores = cross_validation.cross_val_score(LinReg, X_train_counts, y_train, cv=10)  
 print("Char Count R^2 Cross-Validation Mean: %0.4f" % char_count_scores.mean())
+
+#Add char count linear regression fit to the scatter plot for reference
 LinReg.fit (X_train_counts, y_train)
 fit_line_y = LinReg.predict(X_train_counts)
 plt.plot(X_train.loc[:, 'cum_time'], fit_line_y, "x")
