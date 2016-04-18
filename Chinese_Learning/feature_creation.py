@@ -34,15 +34,19 @@ def char_counts(df):
     n = df.shape[0]
     df.loc[:,'percent_seen'] = 0.0
     for i in range(1, n):   #cycle through all rows except first row
-        prior_non_zero = dtm[:(i-1),:].nonzero()    #Find non-zero values in sparse matrix in (i-1) records
-        before_chars = np.unique(prior_non_zero[1])  #Get list of all characters that have been seen so far
+        prior_non_zero = dtm[:i,:].nonzero()[1]    #Find non-zero values in sparse matrix in (i-1) records
+        before_chars = np.unique(prior_non_zero)  #Get list of all characters that have been seen so far
+        current_chars = np.sort(dtm[i,:].nonzero()[1]) #Find non-zero characters in current record as column #'s
         
-        #Find non-zero characters in current record as column #'s
-        current_chars = np.sort(dtm[i,:].nonzero()[1])  
-        
+        #Use characters that match previous non-zero characters and current characters to calculate % seen        
         #http://stackoverflow.com/questions/28901311/numpy-find-index-of-elements-in-one-array-that-occur-in-another-array
         matching_current_index = np.where(np.in1d(current_chars, before_chars))[0]
         df.loc[i,'percent_seen'] = float(matching_current_index.shape[0])/float(current_chars.shape[0])
+        
+        #matching_chars = current_chars[matching_current_index]       
+        #for j in list(matching_current_index):
+            #http://stackoverflow.com/questions/10252766/python-numpy-get-array-locations-of-a-list-of-values
+            #[np.where(prior_non_zero[1]==k) for k in list(matching_current_index)]
         
     #Get mean days since characters last read (for those already seen in text)
         
