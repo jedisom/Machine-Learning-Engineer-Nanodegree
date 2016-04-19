@@ -18,6 +18,20 @@ def Add_cumsums(df):
     df.loc[:,'cum_char'] = df.loc[:,'text_length'].cumsum(axis = 0)
     
     return df
+
+def normalize_features(df):
+    #normalize the following features so interaction terms can be created without LARGE values    
+    #cum_time, cum_char, percent_seen, mean_days_since_seen
+    df.loc[:, 'norm_cum_time'] = ((df.loc[:, 'cum_time'] - min(df.loc[:, 'cum_time'])) / 
+                             (max(df.loc[:, 'cum_time']) - min(df.loc[:, 'cum_time'])))
+    
+    df.loc[:, 'norm_cum_char'] = ((df.loc[:, 'cum_char'] - min(df.loc[:, 'cum_char'])) / 
+                             (max(df.loc[:, 'cum_char']) - min(df.loc[:, 'cum_char'])))
+
+    df.loc[:, 'norm_days_since'] = ((df.loc[:, 'mean_days_since_seen'] - min(df.loc[:, 'mean_days_since_seen'])) / 
+                             (max(df.loc[:, 'mean_days_since_seen']) - min(df.loc[:, 'mean_days_since_seen'])))
+    
+    return df 
     
 def char_counts(df):
     #This function creates columns for each character and counts the times it
@@ -63,8 +77,15 @@ def char_counts(df):
         days_since_seen = map(lambda x: current_date - x, df.loc[last_date_rows, 'date'])
         df.loc[i,'mean_days_since_seen'] = (sum(days_since_seen, datetime.timedelta(0)).total_seconds()
                                             / 86400.0 / (len(days_since_seen)))
-                                            
-    return df    
+    
+    #Normalize the current features
+    df = normalize_features(df)    
+    
+    #Create interaction terms with cumulative time and character count features
+    df.loc[:,'timeXper_seen'] = df.loc[:, 'norm_cum_time'] *  df.loc[:,'percent_seen'] 
+    df.loc[:,'timeXdays_since'] = df.loc[:, 'norm_cum_time'] *  df.loc[:,'norm_days_since']
+    
+    return df                                
     
 def create_features(df):
     
