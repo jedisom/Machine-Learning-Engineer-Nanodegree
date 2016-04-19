@@ -22,7 +22,7 @@ raw_filename = 'Raw_Chinese_Learning_Log.xlsx'
 tidy_data = tidy_up_data(raw_filename)
 
 #Create features to be used in supervised learning
-X_raw = tidy_data.loc[:, :'text_length']
+X_raw = tidy_data.loc[:, :'text_length'].copy(deep = True)
 X = create_features(X_raw.copy(deep = True))
 
 #take log in order to deal with exponentially larger y data at beginning of dataset
