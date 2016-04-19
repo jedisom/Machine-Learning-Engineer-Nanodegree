@@ -23,6 +23,8 @@ tidy_data = tidy_up_data(raw_filename)
 
 #Create features to be used in supervised learning
 X_raw = tidy_data.loc[:, :'text_length'].copy(deep = True)
+#create_features creates features that can't be created once data has been split
+# into training and test data.
 X = create_features(X_raw.copy(deep = True))
 
 #take log in order to deal with exponentially larger y data at beginning of dataset
@@ -38,6 +40,9 @@ print 'The mean reading speed over the entire dataset is %r seconds per characte
 
 #Split dataset into training and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
+
+#from feature_creation import find_topics
+#X_train = find_topics(X_train, 10)
 
 #Create initial test set visualization; baseline learning curve model
 #plt.plot(X_train.loc[:, 'cum_char'], y_train, "o")

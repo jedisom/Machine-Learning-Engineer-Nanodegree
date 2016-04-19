@@ -92,3 +92,39 @@ def create_features(df):
     new_df = Add_cumsums(df)
     new_df = char_counts(new_df)
     return new_df
+    
+#http://scikit-learn.org/stable/auto_examples/applications/topics_extraction_with_nmf_lda.html    
+def print_top_words(model, feature_names, n_top_words):
+    for topic_idx, topic in enumerate(model.components_):
+        print("Topic #%d:" % topic_idx)
+        print(" ".join([feature_names[i]
+                        for i in topic.argsort()[:-n_top_words - 1:-1]]))
+    print()
+
+def find_topics(df, n_topics):
+    
+    #http://scikit-learn.org/stable/auto_examples/applications/topics_extraction_with_nmf_lda.html    
+    from sklearn.feature_extraction.text import CountVectorizer
+    from sklearn.decomposition import LatentDirichletAllocation    
+    
+    # Use tf (raw term count) features for LDA.
+    print("Extracting character frequency features for topic modeling...")
+    vectorizer = CountVectorizer(decode_error = 'strict', analyzer = 'char')    
+    corpus = df.loc[:,'text_read']
+    dtm = vectorizer.fit_transform(corpus)    
+    
+    
+    print("Fitting LDA models with character frequency features...")
+    #This requires sklearn.__version__ to be 0.17.X or greater    
+    lda = LatentDirichletAllocation(n_topics=n_topics, max_iter=5,
+                                    learning_method='online', learning_offset=50.,
+                                    random_state=0)
+    #t0 = time()
+    lda.fit(dtm)
+    #print("done in %0.3fs." % (time() - t0))
+    
+    print("\nTopics in LDA model:")
+    tf_feature_names = vectorizer.get_feature_names()
+    #print_top_words(lda, tf_feature_names, n_top_words)    
+    
+    return df
