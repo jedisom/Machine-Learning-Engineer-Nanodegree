@@ -92,7 +92,9 @@ plt.show()
 #RSE = make_scorer(mean_squared_error, X = X_train_baseline, y = y_train)                          
 LinReg = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
 random.seed = 1
-X_train_counts = X_train.loc[:, ('cum_time', 'percent_seen', 'mean_days_since_seen')]
+feature_list = ('cum_time', 'percent_seen', 'mean_days_since_seen', 
+                'timeXper_seen', 'timeXdays_since')
+X_train_counts = X_train.loc[:, feature_list]
 char_count_scores = cross_validation.cross_val_score(LinReg, X_train_counts, y_train, cv=10)  
 print("Char Count R^2 Cross-Validation Mean: %0.4f" % char_count_scores.mean())
 
