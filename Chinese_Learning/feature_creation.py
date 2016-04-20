@@ -116,15 +116,19 @@ def find_topics(df, n_topics):
     
     print("Fitting LDA models with character frequency features...")
     #This requires sklearn.__version__ to be 0.17.X or greater    
-    lda = LatentDirichletAllocation(n_topics=n_topics, max_iter=5,
-                                    learning_method='online', learning_offset=50.,
+    lda = LatentDirichletAllocation(n_topics=n_topics, learning_method='online', 
                                     random_state=0)
     #t0 = time()
     lda.fit(dtm)
     #print("done in %0.3fs." % (time() - t0))
     
-    print("\nTopics in LDA model:")
-    tf_feature_names = vectorizer.get_feature_names()
-    #print_top_words(lda, tf_feature_names, n_top_words)    
+    #create topic 'names' and columns in dataframe    
+    topic_names = []    
+    for i in range(0, n_topics):
+        name = 't' + str(i+1)        
+        topic_names.append(name)
+        df.loc[:, name] = 0.0
+    
+    df.loc[:, topic_names] = lda.transform(dtm)
     
     return df
