@@ -66,8 +66,10 @@ n_train = X_train.shape[0]
 X_train_baseline = X_train.loc[:, 'cum_time'].reshape((n_train,1))
 clf = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
 random.seed = 1
-baseline_scores = cross_validation.cross_val_score(clf, X_train_baseline, y_train, cv=10)  
-print("Baseline R^2 Cross-Validation Mean: %0.4f" % baseline_scores.mean())
+baseline_scores = cross_validation.cross_val_score(clf, X_train_baseline, y_train, 
+                                                  scoring='mean_squared_error', cv=10)  
+base_mean = baseline_scores.mean()*(-1)
+print("Baseline MSE Cross-Validation Mean: %0.4f" % base_mean)
 clf.fit (X_train_baseline, y_train)
 
 #show linear fit on cumulative time scatter plot
@@ -94,14 +96,21 @@ plt.show()
 #sklearn.linear_model.Ridge
 #sklearn.linear_model.LinearRegression
 
-#RSE = make_scorer(mean_squared_error, X = X_train_baseline, y = y_train)                          
+#RSE = make_scorer(mean_squared_error, X = X_train_baseline, y = y_train) 
+from feature_creation import find_topics
+X_train = find_topics(X_train, 3)
+                         
 LinReg = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
 random.seed = 1
 feature_list = ('cum_time', 'percent_seen', 'mean_days_since', 
-                'timeXper_seen', 'timeXdays_since')
+                'timeXper_seen', 'timeXdays_since', 'norm_t1', 'norm_t2', 
+                'norm_t3')
 X_train_counts = X_train.loc[:, feature_list]
-char_count_scores = cross_validation.cross_val_score(LinReg, X_train_counts, y_train, cv=10)  
-print("Char Count R^2 Cross-Validation Mean: %0.4f" % char_count_scores.mean())
+char_count_scores = cross_validation.cross_val_score(LinReg, X_train_counts, 
+                                                     y_train, cv=10, 
+                                                     scoring='mean_squared_error')                      
+score_mean = char_count_scores.mean() * (-1)
+print("New Model MSE Cross-Validation Mean: %0.4f" % score_mean)
 
 #Add char count linear regression fit to the scatter plot for reference
 LinReg.fit (X_train_counts, y_train)
