@@ -45,10 +45,12 @@ def char_counts(df):
     import numpy as np  
     from itertools import chain
     import datetime
+    from scipy.sparse import csr_matrix
     
     n = df.shape[0]
-    df.loc[:,'percent_seen'] = 0.0
-    df.loc[:,'mean_days_since'] = 0.0
+    df.loc[:, 'percent_seen'] = 0.0
+    df.loc[:, 'mean_days_since'] = 0.0
+    df.loc[:, 'mean_term_freq'] = 0.0
     for i in range(1, n):   #cycle through all rows except first row
         ##Get percent of characters not seen in text so far        
         prior_non_zero = dtm[:i,:].nonzero()    #Find non-zero values in sparse matrix in (i-1) records
@@ -74,6 +76,12 @@ def char_counts(df):
         df.loc[i,'mean_days_since'] = (sum(days_since_seen, datetime.timedelta(0)).total_seconds()
                                             / 86400.0 / (len(days_since_seen)))
     
+        ##Get mean frequency of document terms in the corpus so far
+        #    NOT including the text read during the study session
+        denominator = float(csr_matrix.sum(dtm[:i,:]))
+        numerator = csr_matrix.sum(dtm[:i, matching_current_index])
+        df.loc[i, 'mean_term_freq'] = numerator / denominator        
+    
     #Normalize the current features
     norm_feat_list = ['cum_time', 'cum_char', 'mean_days_since']
     df = normalize_features(df, norm_feat_list)    
@@ -81,6 +89,7 @@ def char_counts(df):
     #Create interaction terms with cumulative time and character count features
     df.loc[:,'timeXper_seen'] = df.loc[:, 'norm_cum_time'] *  df.loc[:,'percent_seen'] 
     df.loc[:,'timeXdays_since'] = df.loc[:, 'norm_cum_time'] *  df.loc[:,'norm_mean_days_since']
+    df.loc[:,'timeXterm_freq'] = df.loc[:, 'norm_cum_time'] *  df.loc[:,'mean_term_freq']
     
     return df                                
     

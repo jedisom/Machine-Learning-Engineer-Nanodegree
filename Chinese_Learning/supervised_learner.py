@@ -68,7 +68,8 @@ clf = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
 random.seed = 1
 baseline_scores = cross_validation.cross_val_score(clf, X_train_baseline, y_train, 
                                                   scoring='mean_squared_error', cv=10)  
-base_mean = baseline_scores.mean()*(-1)
+#https://github.com/scikit-learn/scikit-learn/issues/2439
+base_mean = baseline_scores.mean()*(-1) #output is negative and needs to be reversed
 print("Baseline MSE Cross-Validation Mean: %0.4f" % base_mean)
 clf.fit (X_train_baseline, y_train)
 
