@@ -19,18 +19,14 @@ def Add_cumsums(df):
     
     return df
 
-def normalize_features(df):
-    #normalize the following features so interaction terms can be created without LARGE values    
-    #cum_time, cum_char, percent_seen, mean_days_since_seen
-    df.loc[:, 'norm_cum_time'] = ((df.loc[:, 'cum_time'] - min(df.loc[:, 'cum_time'])) / 
-                             (max(df.loc[:, 'cum_time']) - min(df.loc[:, 'cum_time'])))
+def normalize_features(df, feature_list):
     
-    df.loc[:, 'norm_cum_char'] = ((df.loc[:, 'cum_char'] - min(df.loc[:, 'cum_char'])) / 
-                             (max(df.loc[:, 'cum_char']) - min(df.loc[:, 'cum_char'])))
-
-    df.loc[:, 'norm_days_since'] = ((df.loc[:, 'mean_days_since_seen'] - min(df.loc[:, 'mean_days_since_seen'])) / 
-                             (max(df.loc[:, 'mean_days_since_seen']) - min(df.loc[:, 'mean_days_since_seen'])))
-    
+    #normalize features from feature_list so they have a range from 0 to 1
+    for feature in feature_list:
+        n_feature = 'norm_' + feature        
+        df.loc[:, n_feature] = ((df.loc[:, feature] - min(df.loc[:, feature])) / 
+                             (max(df.loc[:, feature]) - min(df.loc[:, feature])))
+                             
     return df 
     
 def char_counts(df):
@@ -52,7 +48,7 @@ def char_counts(df):
     
     n = df.shape[0]
     df.loc[:,'percent_seen'] = 0.0
-    df.loc[:,'mean_days_since_seen'] = 0.0
+    df.loc[:,'mean_days_since'] = 0.0
     for i in range(1, n):   #cycle through all rows except first row
         ##Get percent of characters not seen in text so far        
         prior_non_zero = dtm[:i,:].nonzero()    #Find non-zero values in sparse matrix in (i-1) records
@@ -75,15 +71,16 @@ def char_counts(df):
         last_date_rows = prior_non_zero[0][last_date_indices]
         current_date = df.loc[i,'date']
         days_since_seen = map(lambda x: current_date - x, df.loc[last_date_rows, 'date'])
-        df.loc[i,'mean_days_since_seen'] = (sum(days_since_seen, datetime.timedelta(0)).total_seconds()
+        df.loc[i,'mean_days_since'] = (sum(days_since_seen, datetime.timedelta(0)).total_seconds()
                                             / 86400.0 / (len(days_since_seen)))
     
     #Normalize the current features
-    df = normalize_features(df)    
+    norm_feat_list = ['cum_time', 'cum_char', 'mean_days_since']
+    df = normalize_features(df, norm_feat_list)    
     
     #Create interaction terms with cumulative time and character count features
     df.loc[:,'timeXper_seen'] = df.loc[:, 'norm_cum_time'] *  df.loc[:,'percent_seen'] 
-    df.loc[:,'timeXdays_since'] = df.loc[:, 'norm_cum_time'] *  df.loc[:,'norm_days_since']
+    df.loc[:,'timeXdays_since'] = df.loc[:, 'norm_cum_time'] *  df.loc[:,'norm_mean_days_since']
     
     return df                                
     
@@ -130,5 +127,8 @@ def find_topics(df, n_topics):
         df.loc[:, name] = 0.0
     
     df.loc[:, topic_names] = lda.transform(dtm)
+    
+    #normalize these topic features
+    df = normalize_features(df, topic_names)    
     
     return df
