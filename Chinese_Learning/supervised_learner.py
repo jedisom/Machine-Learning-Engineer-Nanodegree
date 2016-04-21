@@ -131,11 +131,11 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.svm import SVR
 
 feature_list = ('ln_cum_char', 'percent_seen', 'mean_days_since', 
-                'mean_term_freq') #'norm_t1', 'norm_t2', 'norm_t3'
+                'mean_term_freq', 'norm_t1', 'norm_t2', 'norm_t3')
 X_train_sub = X_train.loc[:, feature_list]
 
-RF_params = {'n_estimators': [3, 5, 10, 20], 'max_features': ['auto', 'log2', None],
-             'max_depth': [2,3,4]}
+RF_params = {'n_estimators': [100, 120, 150], 'max_features': ['auto', 'log2'],
+             'max_depth': [9, 12, 15]}
 BR_params = {'alpha_1': [3e-07, 1e-06, 3e-06], 'alpha_2': [3e-07, 1e-06, 3e-06],
              'lambda_1': [3e-07, 1e-06, 3e-06], 'lambda_2': [3e-07, 1e-06, 3e-06]}
 Ridge_params = {'alpha': [0.1, 0.3, 1.0, 3.0, 10.0]}
@@ -153,22 +153,11 @@ model_list = [RF_model, BR_model, Ridge_model, DT_model, SV_model]
 
 MSE = make_scorer(score_func = mean_squared_error, greater_is_better = False) 
 n = len(param_list)
-#for i in range(0, n):
-#    params = param_list[i]
-#    model = model_list[i]
-
-#    clf = GridSearchCV(estimator = model, param_grid = params, 
-#                       scoring = MSE, cv = 10)
-#    clf.fit(X_train_sub, y_train)
-#    print (clf.best_estimator_)
-#    print ("The best score for the model above is %0.4f" % (clf.best_score_ *(-1)))
-
-
-
-
-
-#modelCV = GridSearchCV(model)
-
-
-
-
+for i in range(0, n):
+    params = param_list[i]
+    model = model_list[i]
+    clf = GridSearchCV(estimator = model, param_grid = params, 
+                       scoring = MSE, cv = 10)
+    clf.fit(X_train_sub, y_train)
+    print (clf.best_estimator_)
+    print ("The best score for the model above is %0.4f" % (clf.best_score_ *(-1)))
