@@ -88,36 +88,79 @@ plt.text(10000, 3.3, (r'R^2 = %0.4f' %baseline_scores.mean()))
 plt.show()  
 
 ###Improve on baseliine by using features created from the text
-#from sklearn.grid_search import GridSearchCV
-#sklearn.ensemble.RandomForestClassifier
-#sklearn.neural_network.MLPRegressor
-#sklearn.linear_model.BayesianRidge
-#sklearn.tree.DecisionTreeRegressor
-#sklearn.svm.SVR
-#sklearn.linear_model.Ridge
-#sklearn.linear_model.LinearRegression
 
-#RSE = make_scorer(mean_squared_error, X = X_train_baseline, y = y_train) 
+##This section uses simple linear regression as sandbox to find features that
+##will likely give a better fit
 from feature_creation import find_topics
 X_train = find_topics(X_train, 3)
                          
 LinReg = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
 random.seed = 1
+
+model = LinReg
 feature_list = ('cum_time', 'percent_seen', 'mean_days_since', 
-                'timeXper_seen', 'timeXdays_since', 'norm_t1', 'norm_t2', 
-                'norm_t3')
-X_train_counts = X_train.loc[:, feature_list]
-char_count_scores = cross_validation.cross_val_score(LinReg, X_train_counts, 
+                'mean_term_freq', 'norm_t1', 'norm_t2', 'norm_t3')
+X_train_sub = X_train.loc[:, feature_list]
+
+char_count_scores = cross_validation.cross_val_score(model, X_train_sub, 
                                                      y_train, cv=10, 
                                                      scoring='mean_squared_error')                      
 score_mean = char_count_scores.mean() * (-1)
 print("New Model MSE Cross-Validation Mean: %0.4f" % score_mean)
 
 #Add char count linear regression fit to the scatter plot for reference
-LinReg.fit (X_train_counts, y_train)
-fit_line_y = LinReg.predict(X_train_counts)
+LinReg.fit (X_train_sub, y_train)
+fit_line_y = LinReg.predict(X_train_sub)
 plt.plot(X_train.loc[:, 'cum_time'], fit_line_y, "x")
 
-#LinRegGrid = GridSearchCV(linear_model.LinearRegression)
+##This section explores different models with the feature set found to work 
+## well in linear regression
+from sklearn.grid_search import GridSearchCV
+from sklearn.metrics import mean_squared_error, make_scorer
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import BayesianRidge, Ridge
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.svm import SVR
+
+feature_list = ('cum_time', 'percent_seen', 'mean_days_since', 
+                'mean_term_freq') #'norm_t1', 'norm_t2', 'norm_t3'
+X_train_sub = X_train.loc[:, feature_list]
+
+RF_params = {'n_estimators': [3, 5, 10, 20], 'max_features': ['auto', 'log2', None],
+             'max_depth': [2,3,4]}
+BR_params = {'alpha_1': [3e-07, 1e-06, 3e-06], 'alpha_2': [3e-07, 1e-06, 3e-06],
+             'lambda_1': [3e-07, 1e-06, 3e-06], 'lambda_2': [3e-07, 1e-06, 3e-06]}
+Ridge_params = {'alpha': [0.1, 0.3, 1.0, 3.0, 10.0]}
+DT_params = {'splitter': ['random', 'best'], 'max_features': ['auto', 'log2', None],
+             'max_depth': [2,3,4]}
+SV_params = {'kernel':('linear', 'poly', 'rbf', 'sigmoid'), 'C':[0.3, 1.0, 3.0, 10.0]}
+param_list = [RF_params, BR_params, Ridge_params, DT_params, SV_params]
+
+RF_model = RandomForestRegressor(random_state = 1)
+BR_model = BayesianRidge(copy_X = True)
+Ridge_model = Ridge()
+DT_model = DecisionTreeRegressor()
+SV_model = SVR()
+model_list = [RF_model, BR_model, Ridge_model, DT_model, SV_model]
+
+MSE = make_scorer(score_func = mean_squared_error, greater_is_better = False) 
+n = len(param_list)
+#for i in range(0, n):
+#    params = param_list[i]
+#    model = model_list[i]
+
+#    clf = GridSearchCV(estimator = model, param_grid = params, 
+#                       scoring = MSE, cv = 10)
+#    clf.fit(X_train_sub, y_train)
+#    print (clf.best_estimator_)
+#    print ("The best score for the model above is %0.4f" % (clf.best_score_ *(-1)))
+
+
+
+
+
+#modelCV = GridSearchCV(model)
+
+
 
 
