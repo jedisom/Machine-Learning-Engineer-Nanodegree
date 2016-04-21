@@ -10,12 +10,15 @@ algorithm to more accurately predict the seconds per character metric.
 
 def Add_cumsums(df):
     print 'Calculating cumulative sums...'    
+    from math import log
     
     #Add cumulative time read so far    
     df.loc[:,'cum_time'] = df.loc[:,'time_spent'].cumsum(axis = 0)
+    df.loc[:,'ln_cum_time'] = df.loc[:,'cum_time'].apply(log)
     
     #Add cumulative chinese characters read so far
     df.loc[:,'cum_char'] = df.loc[:,'text_length'].cumsum(axis = 0)
+    df.loc[:,'ln_cum_char'] = df.loc[:,'cum_char'].apply(log)
     
     return df
 

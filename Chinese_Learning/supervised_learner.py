@@ -133,7 +133,7 @@ BR_params = {'alpha_1': [3e-07, 1e-06, 3e-06], 'alpha_2': [3e-07, 1e-06, 3e-06],
 Ridge_params = {'alpha': [0.1, 0.3, 1.0, 3.0, 10.0]}
 DT_params = {'splitter': ['random', 'best'], 'max_features': ['auto', 'log2', None],
              'max_depth': [2,3,4]}
-SV_params = {'kernel':('linear', 'poly', 'rbf', 'sigmoid'), 'C':[0.3, 1.0, 3.0, 10.0]}
+SV_params = {'kernel':('linear', 'rbf'), 'C':[0.3, 1.0, 3.0, 10.0]}
 param_list = [RF_params, BR_params, Ridge_params, DT_params, SV_params]
 
 RF_model = RandomForestRegressor(random_state = 1)
