@@ -74,25 +74,25 @@ from sklearn import cross_validation
 #http://stackoverflow.com/questions/30813044/sklearn-found-arrays-with-inconsistent-numbers-of-samples-when-calling-linearre
 n_train = X_train.shape[0]
 X_train_baseline = X_train.loc[:, 'ln_cum_char'].reshape((n_train,1))
-clf = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
+base_estimator = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
 random.seed = 1
-baseline_scores = cross_validation.cross_val_score(clf, X_train_baseline, y_train, 
+baseline_scores = cross_validation.cross_val_score(base_estimator, X_train_baseline, y_train, 
                                                   scoring='mean_squared_error', cv=10)  
 #https://github.com/scikit-learn/scikit-learn/issues/2439
 base_mean = baseline_scores.mean()*(-1) #output is negative and needs to be reversed
 print("Baseline MSE Cross-Validation Mean: %0.4f" % base_mean)
-clf.fit (X_train_baseline, y_train)
+base_estimator.fit (X_train_baseline, y_train)
 
 #show linear fit on cumulative time scatter plot
 fit_line_X = [min(X_train_baseline), max(X_train_baseline)]
-fit_line_y = clf.predict(fit_line_X)
+fit_line_y = base_estimator.predict(fit_line_X)
 
 plt.plot(fit_line_X, fit_line_y, "k", X_train.loc[:, 'ln_cum_char'], y_train, "o")
 plt.ylabel('ln(Seconds per Character)')
 plt.xlabel('ln(Cumulative Characters Read)')
 plt.title('Baseline Fit to Chinese Characters Reading Speed Experience Curve')
-m = str(round(clf.coef_[0],9))
-b = str(round(clf.intercept_,4))
+m = str(round(base_estimator.coef_[0],9))
+b = str(round(base_estimator.intercept_,4))
 plt.text(3.0, 2.2, (r'y = ' + m + r' * x + ' + b))
 plt.text(3.5, 2.0, (r'MSE = %0.4f' % base_mean))
 plt.show()  
@@ -153,11 +153,29 @@ model_list = [RF_model, BR_model, Ridge_model, DT_model, SV_model]
 
 MSE = make_scorer(score_func = mean_squared_error, greater_is_better = False) 
 n = len(param_list)
+best_MSE = 1000.0    
+best_model = None
+best_estimator = None
 for i in range(0, n):
     params = param_list[i]
     model = model_list[i]
+    
     clf = GridSearchCV(estimator = model, param_grid = params, 
                        scoring = MSE, cv = 10)
     clf.fit(X_train_sub, y_train)
     print (clf.best_estimator_)
     print ("The best score for the model above is %0.4f" % (clf.best_score_ *(-1)))
+    if (clf.best_score_ *(-1)) < best_MSE:
+        best_MSE = (clf.best_score_ *(-1))
+        best_estimator = clf.best_estimator_
+        
+###Compare the baseline model to the best predictor on the test set
+#Baseline MSE on test set
+n_test = X_test.shape[0]
+X_test_baseline = X_test.loc[:, 'ln_cum_char'].reshape((n_test,1))
+y_test_pred = base_estimator.predict(X_test_baseline)
+MSE_base = mean_squared_error(y_test, y_test_pred)
+
+#Best MSE on test set
+y_test_pred = best_estimator.predict(X_test.loc[:, feature_list])
+MSE_best = mean_squared_error(y_test, y_test_pred)
