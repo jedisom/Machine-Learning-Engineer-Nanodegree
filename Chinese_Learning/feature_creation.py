@@ -102,15 +102,7 @@ def create_features(df):
     new_df = char_counts(new_df)
     return new_df
     
-#http://scikit-learn.org/stable/auto_examples/applications/topics_extraction_with_nmf_lda.html    
-def print_top_words(model, feature_names, n_top_words):
-    for topic_idx, topic in enumerate(model.components_):
-        print("Topic #%d:" % topic_idx)
-        print(" ".join([feature_names[i]
-                        for i in topic.argsort()[:-n_top_words - 1:-1]]))
-    print()
-
-def find_topics(df, n_topics):
+def find_topics(df_train, df_test, n_topics):
     
     #http://scikit-learn.org/stable/auto_examples/applications/topics_extraction_with_nmf_lda.html    
     from sklearn.feature_extraction.text import CountVectorizer
@@ -118,29 +110,39 @@ def find_topics(df, n_topics):
     
     # Use tf (raw term count) features for LDA.
     print("Extracting character frequency features for topic modeling...")
-    vectorizer = CountVectorizer(decode_error = 'strict', analyzer = 'char')    
-    corpus = df.loc[:,'text_read']
-    dtm = vectorizer.fit_transform(corpus)    
     
+    #Need to create a dtm with combined (train/test) vocabulary in columns
+    n_train = df_train.shape[0]    
+    df_combined = df_train.copy(deep = True).append(df_test.copy(deep = True))
+    vectorizer = CountVectorizer(decode_error = 'strict', analyzer = 'char')
+    corpus_combined = df_combined.loc[:,'text_read']
+    dtm_combined = vectorizer.fit_transform(corpus_combined) 
+    
+    #split the train and test data again to ensure we only use test set for
+    #supervised cross-validated learning
+    dtm_train = dtm_combined[:n_train,:]
+    dtm_test = dtm_combined[n_train:,:]
     
     print("Fitting LDA models with character frequency features...")
     #This requires sklearn.__version__ to be 0.17.X or greater    
     lda = LatentDirichletAllocation(n_topics=n_topics, learning_method='online', 
                                     random_state=0)
-    #t0 = time()
-    lda.fit(dtm)
-    #print("done in %0.3fs." % (time() - t0))
+    #fit to the training document term matrix
+    lda.fit(dtm_train)
     
     #create topic 'names' and columns in dataframe    
     topic_names = []    
     for i in range(0, n_topics):
         name = 't' + str(i+1)        
         topic_names.append(name)
-        df.loc[:, name] = 0.0
+        df_train.loc[:, name] = 0.0
+        df_test.loc[:, name] = 0.0
     
-    df.loc[:, topic_names] = lda.transform(dtm)
+    df_train.loc[:, topic_names] = lda.transform(dtm_train)
+    df_test.loc[:, topic_names] = lda.transform(dtm_test)
     
     #normalize these topic features
-    df = normalize_features(df, topic_names)    
+    df_train = normalize_features(df_train, topic_names)    
+    df_test = normalize_features(df_test, topic_names)
     
-    return df
+    return df_train

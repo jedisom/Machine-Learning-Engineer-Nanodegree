@@ -102,7 +102,7 @@ plt.show()
 ##This section uses simple linear regression as sandbox to find features that
 ##will likely give a better fit
 from feature_creation import find_topics
-X_train = find_topics(X_train, 3)
+X_train = find_topics(X_train, X_test, 3)
                          
 LinReg = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
 random.seed = 1
