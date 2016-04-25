@@ -69,8 +69,6 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_
 from sklearn import linear_model
 from sklearn import cross_validation
 
-
-
 #http://stackoverflow.com/questions/30813044/sklearn-found-arrays-with-inconsistent-numbers-of-samples-when-calling-linearre
 n_train = X_train.shape[0]
 X_train_baseline = X_train.loc[:, 'ln_cum_char'].reshape((n_train,1))
@@ -108,7 +106,7 @@ LinReg = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
 random.seed = 1
 model = LinReg
 feature_list = ('ln_cum_char', 'percent_seen', 'mean_days_since', 
-                'mean_term_freq', 'norm_t1', 'norm_t2', 'norm_t3')  
+                'mean_term_freq', 'norm_t1', 'norm_t2', 'norm_t3')
 X_train_sub = X_train.loc[:, feature_list]
 char_count_scores = cross_validation.cross_val_score(model, X_train_sub, 
                                                      y_train, cv=10, 
@@ -119,7 +117,8 @@ print("New Model MSE Cross-Validation Mean: %0.4f" % score_mean)
 #Add char count linear regression fit to the scatter plot for reference
 LinReg.fit (X_train_sub, y_train)
 fit_line_y = LinReg.predict(X_train_sub)
-plt.plot(X_train.loc[:, 'cum_time'], fit_line_y, "x")
+plt.plot(X_train.loc[:, 'ln_cum_time'], fit_line_y, "x")
+plt.close()
 
 ##This section explores different models with the feature set found to work 
 ## well in linear regression
@@ -131,17 +130,22 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.svm import SVR
 
 feature_list = ('ln_cum_char', 'percent_seen', 'mean_days_since', 
-                'mean_term_freq', 'norm_t1', 'norm_t2', 'norm_t3')
+                'mean_term_freq', 'norm_t1', 'norm_t2', 'norm_t3') #
 X_train_sub = X_train.loc[:, feature_list]
 
-RF_params = {'n_estimators': [100, 120, 150], 'max_features': ['auto', 'log2'],
-             'max_depth': [9, 12, 15]}
+RF_params = {'n_estimators': [3, 5, 10, 20], 'max_features': ['auto', 'log2', None],
+             'max_depth': [2,3,4]}
+
+#RF_params = {'n_estimators': [100, 120, 150], 'max_features': ['auto', 'log2'],
+#             'max_depth': [9, 12, 15]}
 BR_params = {'alpha_1': [3e-07, 1e-06, 3e-06], 'alpha_2': [3e-07, 1e-06, 3e-06],
              'lambda_1': [3e-07, 1e-06, 3e-06], 'lambda_2': [3e-07, 1e-06, 3e-06]}
 Ridge_params = {'alpha': [0.1, 0.3, 1.0, 3.0, 10.0]}
 DT_params = {'splitter': ['random', 'best'], 'max_features': ['auto', 'log2', None],
              'max_depth': [2,3,4]}
-SV_params = {'kernel':('linear', 'rbf'), 'C':[0.3, 1.0, 3.0, 10.0]}
+n = len(feature_list)
+SV_params = {'kernel':('linear', 'rbf'), 'C':[0.3, 1.0, 3.0, 10.0], 
+             'gamma': [0.3/n, 1.0/n, 3.0/n]}
 param_list = [RF_params, BR_params, Ridge_params, DT_params, SV_params]
 
 RF_model = RandomForestRegressor(random_state = 1)
@@ -168,14 +172,38 @@ for i in range(0, n):
     if (clf.best_score_ *(-1)) < best_MSE:
         best_MSE = (clf.best_score_ *(-1))
         best_estimator = clf.best_estimator_
+
+#This code is here to fine tune the random forest model
+feature_list = ('ln_cum_char', 'percent_seen', 'mean_days_since', 
+                'mean_term_freq', 'norm_t1', 'norm_t2', 'norm_t3') #
+X_train_sub = X_train.loc[:, feature_list]
+params = {'n_estimators': [100, 120, 150], 'max_features': ['auto', 'log2'],
+             'max_depth': [9, 12, 15]}       
+model = RF_model
+clf = GridSearchCV(estimator = model, param_grid = params, 
+                       scoring = MSE, cv = 10)
+clf.fit(X_train_sub, y_train)
+print (clf.best_estimator_)
+print ("The best score for the model above is %0.4f" % (clf.best_score_ *(-1)))
         
 ###Compare the baseline model to the best predictor on the test set
 #Baseline MSE on test set
 n_test = X_test.shape[0]
 X_test_baseline = X_test.loc[:, 'ln_cum_char'].reshape((n_test,1))
-y_test_pred = base_estimator.predict(X_test_baseline)
-MSE_base = mean_squared_error(y_test, y_test_pred)
+y_test_base = base_estimator.predict(X_test_baseline)
+MSE_base = mean_squared_error(y_test, y_test_base)
 
 #Best MSE on test set
-y_test_pred = best_estimator.predict(X_test.loc[:, feature_list])
-MSE_best = mean_squared_error(y_test, y_test_pred)
+y_test_best = best_estimator.predict(X_test.loc[:, feature_list])
+MSE_best = mean_squared_error(y_test, y_test_best)
+
+#Create plot (ln/ln) of Actual and Predicted Data
+Raw = plt.plot(X_test.loc[:, 'ln_cum_char'], y_test, "o", label = 'Raw Data')
+Base = plt.plot(X_test.loc[:, 'ln_cum_char'], y_test_base, "x", label = 'Baseline')
+Best = plt.plot(X_test.loc[:, 'ln_cum_char'], y_test_best, "x", label = 'Best Model')
+#plt.plot(X_test.loc[:, 'ln_cum_char'], y_test, "o", 
+#         X_test.loc[:, 'ln_cum_char'], y_test_best, "x")
+plt.ylabel('ln(Seconds per Character)')
+plt.xlabel('ln(Cumulative Characters Read)')
+plt.title('Baseline & Best Fit to Chinese Characters Reading Speed')
+plt.legend()
