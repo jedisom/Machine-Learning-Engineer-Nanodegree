@@ -95,7 +95,7 @@ plt.text(3.0, 2.2, (r'y = ' + m + r' * x + ' + b))
 plt.text(3.5, 2.0, (r'MSE = %0.4f' % base_mean))
 plt.show()  
 
-###Improve on baseliine by using features created from the text
+###Improve on baseline by using features created from the text
 
 ##This section uses simple linear regression as sandbox to find features that
 ##will likely give a better fit
@@ -183,15 +183,41 @@ model = RF_model
 clf = GridSearchCV(estimator = model, param_grid = params, 
                        scoring = MSE, cv = 10)
 clf.fit(X_train_sub, y_train)
+best_estimator = clf.best_estimator_
 print (clf.best_estimator_)
 print ("The best score for the model above is %0.4f" % (clf.best_score_ *(-1)))
-        
+    
 ###Compare the baseline model to the best predictor on the test set
-#Baseline MSE on test set
+from scipy.stats.mstats import normaltest
+from scipy.stats import ttest_ind
+
 n_test = X_test.shape[0]
 X_test_baseline = X_test.loc[:, 'ln_cum_char'].reshape((n_test,1))
-y_test_base = base_estimator.predict(X_test_baseline)
-MSE_base = mean_squared_error(y_test, y_test_base)
+base_estimator = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
+random.seed = 1
+base_estimator.fit (X_train_baseline, y_train) #Train model with original training set
+baseline_test_scores = cross_validation.cross_val_score(base_estimator, X_test_baseline, y_test, 
+                                                  scoring='mean_squared_error', cv=10)
+p_base_normality = normaltest(baseline_test_scores)[1]                                                  
+                                                  
+feature_list = ('ln_cum_char', 'percent_seen', 'mean_days_since', 
+                'mean_term_freq', 'norm_t1', 'norm_t2', 'norm_t3') #
+X_test_sub = X_test.loc[:, feature_list]
+best_test_scores = cross_validation.cross_val_score(best_estimator, X_test_sub, y_test, 
+                                                  scoring='mean_squared_error', cv=10)
+p_best_normality = normaltest(best_test_scores)[1]    
+t_P_value = ttest_ind(baseline_test_scores, best_test_scores)[1]                                             
+print "Normality test for baseline CV MSE gives a p-value of %0.4f" % p_base_normality
+print "Normality test for best model's CV MSE gives a p-value of %0.4f" % p_best_normality
+print "t-test for independece between baseline and best model gives a p-value of %0.4f" % t_P_value
+
+#https://github.com/scikit-learn/scikit-learn/issues/2439
+base_test_CVmean = baseline_test_scores.mean()*(-1) #output is negative and needs to be reversed    
+base_test_CVstdev = baseline_test_scores.std()      
+
+
+y_test_base = base_estimator.predict(X_test_baseline) #Estimate y with model created from training set
+MSE_base = mean_squared_error(y_test, y_test_base) #MSE on test for model based on training set
 
 #Best MSE on test set
 y_test_best = best_estimator.predict(X_test.loc[:, feature_list])
@@ -205,5 +231,54 @@ Best = plt.plot(X_test.loc[:, 'ln_cum_char'], y_test_best, "x", label = 'Best Mo
 #         X_test.loc[:, 'ln_cum_char'], y_test_best, "x")
 plt.ylabel('ln(Seconds per Character)')
 plt.xlabel('ln(Cumulative Characters Read)')
-plt.title('Baseline & Best Fit to Chinese Characters Reading Speed')
+plt.title('Baseline/Best Fit to Test Set Chinese Characters Reading Speed')
 plt.legend()
+
+
+ax = plt.subplot(111, xlabel='x', ylabel='y', title='title')
+for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
+             ax.get_xticklabels() + ax.get_yticklabels()):
+    item.set_fontsize(20)
+# Correlation plots in input features
+#http://matplotlib.org/examples/pylab_examples/subplots_demo.html
+n = len(feature_list)
+f, axarr = plt.subplots(n, n)
+for i in range(0, n):
+    for j in range(0, n):
+        axarr[i, j].scatter(X_train.loc[:,feature_list[i]],
+                            X_train.loc[:,feature_list[j]], s = 20)#"o", 
+        axarr[i, j].set_title("X: " + feature_list[i] + "; Y: " + feature_list[j])
+        axarr[i, j].title.set_fontsize(8)
+
+for i in range (0, n):
+    plt.setp([a.get_xticklabels() for a in axarr[i, :]], visible=False)
+    plt.setp([a.get_yticklabels() for a in axarr[:, i]], visible=False)
+#axarr[0, 0].plot(x, y)
+#axarr[0, 0].set_title('Axis [0,0]')
+#axarr[0, 1].scatter(x, y)
+#axarr[0, 1].set_title('Axis [0,1]')
+#axarr[1, 0].plot(x, y ** 2)
+#axarr[1, 0].set_title('Axis [1,0]')
+#axarr[1, 1].scatter(x, y ** 2)
+#axarr[1, 1].set_title('Axis [1,1]')
+# Fine-tune figure; hide x ticks for top plots and y ticks for right plots
+plt.setp([a.get_xticklabels() for a in axarr[0, :]], visible=False)
+plt.setp([a.get_yticklabels() for a in axarr[:, 1]], visible=False)
+
+#Create non-ln plot of Actual and Predicted Data
+#from math import exp
+#n_test = y_test.shape[0]
+#y_test_exp = y_test.apply(exp)
+#y_test_base_exp = y_test_base.apply(exp)
+
+#Raw = plt.plot(X_test.loc[:, 'cum_char'], y_test_exp, "o", label = 'Raw Data')
+#Base = plt.plot(X_test.loc[:, 'cum_char'], y_test_base.apply(exp), "x",
+#                label = 'Baseline')
+#Best = plt.plot(X_test.loc[:, 'cum_char'], y_test_best.apply(exp), "x", 
+#                label = 'Best Model')
+#plt.plot(X_test.loc[:, 'ln_cum_char'], y_test, "o", 
+#         X_test.loc[:, 'ln_cum_char'], y_test_best, "x")
+#plt.ylabel('Seconds per Character')
+#plt.xlabel('Cumulative Characters Read')
+#plt.title('Baseline & Best Fit to Chinese Characters Reading Speed')
+#plt.legend()
