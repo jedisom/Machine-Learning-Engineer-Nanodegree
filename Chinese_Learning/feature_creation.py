@@ -125,7 +125,7 @@ def find_topics(df_train, df_test, n_topics):
     
     print("Fitting LDA models with character frequency features...")
     #This requires sklearn.__version__ to be 0.17.X or greater    
-    lda = LatentDirichletAllocation(n_topics=n_topics, learning_method='online', 
+    lda = LatentDirichletAllocation(n_topics=n_topics, learning_method='batch', 
                                     random_state=0)
     #fit to the training document term matrix
     lda.fit(dtm_train)
