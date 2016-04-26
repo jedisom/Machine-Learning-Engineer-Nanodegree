@@ -10,12 +10,21 @@ will read traditional Chinese characters measured in seconds per character.
 """
 
 from raw_to_tidy import tidy_up_data
-from feature_creation import create_features
+from feature_creation import create_features, find_topics
 from math import log
-from sklearn.cross_validation import train_test_split
-import numpy as np
+#import numpy as np
 import matplotlib.pyplot as plt
 import random
+from sklearn.cross_validation import train_test_split
+from sklearn import linear_model, cross_validation
+from sklearn.grid_search import GridSearchCV
+from sklearn.metrics import mean_squared_error, make_scorer
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import BayesianRidge, Ridge
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.svm import SVR
+from scipy.stats.mstats import normaltest
+from scipy.stats import ttest_ind, pearsonr
 
 #Import and clean up data
 raw_filename = 'Raw_Chinese_Learning_Log.xlsx'
@@ -49,26 +58,20 @@ print 'The mean reading speed over the entire dataset is %r seconds per characte
 #Split dataset into training and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
 
-#from feature_creation import find_topics
-#X_train = find_topics(X_train, 10)
-
 #Create initial test set visualization; baseline learning curve model
-#plt.plot(X_train.loc[:, 'cum_char'], y_train, "o")
-#plt.ylabel('ln(Seconds per Character)')
-#plt.xlabel('Cumulative Characters Read')
-#plt.title('Chinese Character Reading Speed Scatter Plot')
-#plt.show()  
+plt.plot(X_train.loc[:, 'cum_char'], y_train, "o")
+plt.ylabel('ln(Seconds per Character)')
+plt.xlabel('Cumulative Characters Read')
+plt.title('Chinese Character Reading Speed Scatter Plot')
+plt.close()  
 
-#plt.plot(X_train.loc[:, 'cum_time'], y_train, "o")
-#plt.ylabel('ln(Seconds per Character)')
-#plt.xlabel('Cumulative Time Spent Reading')
-#plt.title('Chinese Character Reading Speed Scatter Plot')
-#plt.show()  
+plt.plot(X_train.loc[:, 'cum_time'], y_train, "o")
+plt.ylabel('ln(Seconds per Character)')
+plt.xlabel('Cumulative Time Spent Reading')
+plt.title('Chinese Character Reading Speed Scatter Plot')
+plt.close()  
 
 ###Create baseline model fit (linear regression of ln(y))
-from sklearn import linear_model
-from sklearn import cross_validation
-
 #http://stackoverflow.com/questions/30813044/sklearn-found-arrays-with-inconsistent-numbers-of-samples-when-calling-linearre
 n_train = X_train.shape[0]
 X_train_baseline = X_train.loc[:, 'ln_cum_char'].reshape((n_train,1))
@@ -85,59 +88,56 @@ base_estimator.fit (X_train_baseline, y_train)
 fit_line_X = [min(X_train_baseline), max(X_train_baseline)]
 fit_line_y = base_estimator.predict(fit_line_X)
 
-plt.plot(fit_line_X, fit_line_y, "k", X_train.loc[:, 'ln_cum_char'], y_train, "o")
+plt.plot(fit_line_X, fit_line_y, "k", label = 'Fit Line')
+plt.plot(X_train.loc[:, 'ln_cum_char'], y_train, "o", label = 'Raw Data')
 plt.ylabel('ln(Seconds per Character)')
 plt.xlabel('ln(Cumulative Characters Read)')
 plt.title('Baseline Fit to Chinese Characters Reading Speed Experience Curve')
 m = str(round(base_estimator.coef_[0],9))
 b = str(round(base_estimator.intercept_,4))
 plt.text(3.0, 2.2, (r'y = ' + m + r' * x + ' + b))
-plt.text(3.5, 2.0, (r'MSE = %0.4f' % base_mean))
-plt.show()  
+plt.text(3.5, 2.0, (r'MSE = %0.4f' % base_mean))  
 
 ###Improve on baseline by using features created from the text
 
 ##This section uses simple linear regression as sandbox to find features that
 ##will likely give a better fit
-from feature_creation import find_topics
 X_train = find_topics(X_train, X_test, 3)
                          
-LinReg = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
 random.seed = 1
-model = LinReg
+LinReg = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
 feature_list = ('ln_cum_char', 'percent_seen', 'mean_days_since', 
                 'mean_term_freq', 'norm_t1', 'norm_t2', 'norm_t3')
 X_train_sub = X_train.loc[:, feature_list]
-char_count_scores = cross_validation.cross_val_score(model, X_train_sub, 
-                                                     y_train, cv=10, 
-                                                     scoring='mean_squared_error')                      
+char_count_scores = cross_validation.cross_val_score(LinReg, X_train_sub, 
+                          y_train, cv=10, scoring='mean_squared_error')                      
 score_mean = char_count_scores.mean() * (-1)
 print("New Model MSE Cross-Validation Mean: %0.4f" % score_mean)
 
 #Add char count linear regression fit to the scatter plot for reference
 LinReg.fit (X_train_sub, y_train)
 fit_line_y = LinReg.predict(X_train_sub)
-plt.plot(X_train.loc[:, 'ln_cum_time'], fit_line_y, "x")
+plt.plot(X_train.loc[:, 'ln_cum_char'], fit_line_y, "x", label = 'New Features')
+plt.legend()
 plt.close()
 
 ##This section explores different models with the feature set found to work 
 ## well in linear regression
-from sklearn.grid_search import GridSearchCV
-from sklearn.metrics import mean_squared_error, make_scorer
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import BayesianRidge, Ridge
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.svm import SVR
-
 feature_list = ('ln_cum_char', 'percent_seen', 'mean_days_since', 
                 'mean_term_freq', 'norm_t1', 'norm_t2', 'norm_t3') #
 X_train_sub = X_train.loc[:, feature_list]
 
+#Create list of models to explore
+RF_model = RandomForestRegressor(random_state = 1)
+BR_model = BayesianRidge(copy_X = True)
+Ridge_model = Ridge()
+DT_model = DecisionTreeRegressor()
+SV_model = SVR()
+model_list = [RF_model, BR_model, Ridge_model, DT_model, SV_model]
+
+#Define lists of parameters to explore in each model
 RF_params = {'n_estimators': [3, 5, 10, 20], 'max_features': ['auto', 'log2', None],
              'max_depth': [2,3,4]}
-
-#RF_params = {'n_estimators': [100, 120, 150], 'max_features': ['auto', 'log2'],
-#             'max_depth': [9, 12, 15]}
 BR_params = {'alpha_1': [3e-07, 1e-06, 3e-06], 'alpha_2': [3e-07, 1e-06, 3e-06],
              'lambda_1': [3e-07, 1e-06, 3e-06], 'lambda_2': [3e-07, 1e-06, 3e-06]}
 Ridge_params = {'alpha': [0.1, 0.3, 1.0, 3.0, 10.0]}
@@ -148,18 +148,14 @@ SV_params = {'kernel':('linear', 'rbf'), 'C':[0.3, 1.0, 3.0, 10.0],
              'gamma': [0.3/n, 1.0/n, 3.0/n]}
 param_list = [RF_params, BR_params, Ridge_params, DT_params, SV_params]
 
-RF_model = RandomForestRegressor(random_state = 1)
-BR_model = BayesianRidge(copy_X = True)
-Ridge_model = Ridge()
-DT_model = DecisionTreeRegressor()
-SV_model = SVR()
-model_list = [RF_model, BR_model, Ridge_model, DT_model, SV_model]
-
+#Setup CV scoring system and initialize variables
 MSE = make_scorer(score_func = mean_squared_error, greater_is_better = False) 
 n = len(param_list)
 best_MSE = 1000.0    
 best_model = None
 best_estimator = None
+
+#Try all of the models and their parameter values with GridSearchCV
 for i in range(0, n):
     params = param_list[i]
     model = model_list[i]
@@ -188,9 +184,6 @@ print (clf.best_estimator_)
 print ("The best score for the model above is %0.4f" % (clf.best_score_ *(-1)))
     
 ###Compare the baseline model to the best predictor on the test set
-from scipy.stats.mstats import normaltest
-from scipy.stats import ttest_ind
-
 n_test = X_test.shape[0]
 X_test_baseline = X_test.loc[:, 'ln_cum_char'].reshape((n_test,1))
 base_estimator = linear_model.LinearRegression(copy_X=True, fit_intercept=True)
@@ -205,16 +198,18 @@ feature_list = ('ln_cum_char', 'percent_seen', 'mean_days_since',
 X_test_sub = X_test.loc[:, feature_list]
 best_test_scores = cross_validation.cross_val_score(best_estimator, X_test_sub, y_test, 
                                                   scoring='mean_squared_error', cv=10)
-p_best_normality = normaltest(best_test_scores)[1]    
+p_best_normality = normaltest(best_test_scores)[1]   
+corr_p_value = pearsonr(baseline_test_scores, best_test_scores) 
 t_P_value = ttest_ind(baseline_test_scores, best_test_scores)[1]                                             
 print "Normality test for baseline CV MSE gives a p-value of %0.4f" % p_base_normality
 print "Normality test for best model's CV MSE gives a p-value of %0.4f" % p_best_normality
+print '''The Pearson correlation coefficient between the baseline and best model
+scores is %0.4F, and the correlation p-value is %0.4F''' % (corr_p_value[0], corr_p_value[1])
 print "t-test for independece between baseline and best model gives a p-value of %0.4f" % t_P_value
 
 #https://github.com/scikit-learn/scikit-learn/issues/2439
-base_test_CVmean = baseline_test_scores.mean()*(-1) #output is negative and needs to be reversed    
-base_test_CVstdev = baseline_test_scores.std()      
-
+#base_test_CVmean = baseline_test_scores.mean()*(-1) #output is negative and needs to be reversed    
+#base_test_CVstdev = baseline_test_scores.std()      
 
 y_test_base = base_estimator.predict(X_test_baseline) #Estimate y with model created from training set
 MSE_base = mean_squared_error(y_test, y_test_base) #MSE on test for model based on training set
@@ -227,19 +222,13 @@ MSE_best = mean_squared_error(y_test, y_test_best)
 Raw = plt.plot(X_test.loc[:, 'ln_cum_char'], y_test, "o", label = 'Raw Data')
 Base = plt.plot(X_test.loc[:, 'ln_cum_char'], y_test_base, "x", label = 'Baseline')
 Best = plt.plot(X_test.loc[:, 'ln_cum_char'], y_test_best, "x", label = 'Best Model')
-#plt.plot(X_test.loc[:, 'ln_cum_char'], y_test, "o", 
-#         X_test.loc[:, 'ln_cum_char'], y_test_best, "x")
 plt.ylabel('ln(Seconds per Character)')
 plt.xlabel('ln(Cumulative Characters Read)')
 plt.title('Baseline/Best Fit to Test Set Chinese Characters Reading Speed')
 plt.legend()
+plt.close()
 
-
-ax = plt.subplot(111, xlabel='x', ylabel='y', title='title')
-for item in ([ax.title, ax.xaxis.label, ax.yaxis.label] +
-             ax.get_xticklabels() + ax.get_yticklabels()):
-    item.set_fontsize(20)
-# Correlation plots in input features
+# Correlation plots of input features for free-form visualization
 #http://matplotlib.org/examples/pylab_examples/subplots_demo.html
 n = len(feature_list)
 f, axarr = plt.subplots(n, n)
@@ -250,35 +239,7 @@ for i in range(0, n):
         axarr[i, j].set_title("X: " + feature_list[i] + "; Y: " + feature_list[j])
         axarr[i, j].title.set_fontsize(8)
 
+#This removes the X and Y axis tick labels to clean up the visualization
 for i in range (0, n):
     plt.setp([a.get_xticklabels() for a in axarr[i, :]], visible=False)
     plt.setp([a.get_yticklabels() for a in axarr[:, i]], visible=False)
-#axarr[0, 0].plot(x, y)
-#axarr[0, 0].set_title('Axis [0,0]')
-#axarr[0, 1].scatter(x, y)
-#axarr[0, 1].set_title('Axis [0,1]')
-#axarr[1, 0].plot(x, y ** 2)
-#axarr[1, 0].set_title('Axis [1,0]')
-#axarr[1, 1].scatter(x, y ** 2)
-#axarr[1, 1].set_title('Axis [1,1]')
-# Fine-tune figure; hide x ticks for top plots and y ticks for right plots
-plt.setp([a.get_xticklabels() for a in axarr[0, :]], visible=False)
-plt.setp([a.get_yticklabels() for a in axarr[:, 1]], visible=False)
-
-#Create non-ln plot of Actual and Predicted Data
-#from math import exp
-#n_test = y_test.shape[0]
-#y_test_exp = y_test.apply(exp)
-#y_test_base_exp = y_test_base.apply(exp)
-
-#Raw = plt.plot(X_test.loc[:, 'cum_char'], y_test_exp, "o", label = 'Raw Data')
-#Base = plt.plot(X_test.loc[:, 'cum_char'], y_test_base.apply(exp), "x",
-#                label = 'Baseline')
-#Best = plt.plot(X_test.loc[:, 'cum_char'], y_test_best.apply(exp), "x", 
-#                label = 'Best Model')
-#plt.plot(X_test.loc[:, 'ln_cum_char'], y_test, "o", 
-#         X_test.loc[:, 'ln_cum_char'], y_test_best, "x")
-#plt.ylabel('Seconds per Character')
-#plt.xlabel('Cumulative Characters Read')
-#plt.title('Baseline & Best Fit to Chinese Characters Reading Speed')
-#plt.legend()
