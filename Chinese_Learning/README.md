@@ -12,9 +12,43 @@ Each row of the dataset contains the following fields
 - Time_Spent: This is the time I spent studying on that day in minutes
 - Text_Read: This is the text from the book I was able to read during the time I was studying.
 
+##Udacity Assignment Guidelines
+>###Capstone Project Guidelines
+>Use the following questions in each section to keep a mental checklist of if you are meeting the standards and requirements for each rubric item your project is graded against. You can find these questions in their respective sections of the project report template [here](https://docs.google.com/document/d/1B-vEOscvfqctGEMHTFDS9Nw7aqcE2iuwPRfp0jK8nf4/pub?embedded=true).
+>####Definition
+>#####Project Overview
+>- Has an overview of the project been provided, such as the problem domain, project origin, and related datasets or input data?
+>- Has enough background information been given so that an uninformed reader would understand the problem domain and following problem statement?
+
+>#####Problem Statement
+>- Is the problem statement clearly defined? Will the reader understand what you are expecting to solve?
+>- Have you thoroughly discussed how you will attempt to solve the problem?
+>- Is an anticipated solution clearly defined? Will the reader understand what results you are looking for?
+
+>#####Metrics
+>- Are the metrics you’ve chosen to measure the performance of your models clearly discussed and defined?
+>- Have you provided reasonable justification for the metrics chosen based on the problem and solution?
+
+>####Results
+>#####Model Evaluation and Validation
+>- Is the final model reasonable and aligning with solution expectations? Are the final parameters of the model appropriate?
+>- Has the final model been tested with various inputs to evaluate whether the model generalizes well to unseen data?
+>- Is the model robust enough for the problem? Do small perturbations (changes) in training data or the input space greatly affect the results?
+>- Can results found from the model be trusted?
+
+>#####Justification
+>- Are the final results found stronger than the benchmark result reported earlier?
+>- Have you thoroughly analyzed and discussed the final solution?
+>- Is the final solution significant enough to have solved the problem?
+
+>####Conclusion
+>#####Free-Form Visualization
+>- Have you visualized a relevant or important quality about the problem, dataset, input data, or results?
+
 ##License
 
 Software and Report Copyright(c) 2016 Jed Isom
+
 For Rights and Use Information for the book/text used to create the 
 `Raw_Chinese_Learning_Log.xlsx` for this project please see this [website](https://www.lds.org/legal/terms?lang=eng&_r=1).
 
