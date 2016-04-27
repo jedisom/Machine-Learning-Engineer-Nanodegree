@@ -12,12 +12,15 @@ Each row of the dataset contains the following fields
 - Time_Spent: This is the time I spent studying on that day in minutes
 - Text_Read: This is the text from the book I was able to read during the time I was studying.
 
-##MIT License
+##License
 
-Copyright (c) 2016 Jed Isom
+Software and Report Copyright(c) 2016 Jed Isom
+For Rights and Use Information for the book/text used to create the 
+`Raw_Chinese_Learning_Log.xlsx` for this project please see this [website](https://www.lds.org/legal/terms?lang=eng&_r=1).
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
+of this software and associated documentation files (the "Software") excluding the 
+book/text used to created `Raw_Chinese_Learning_Log.xlsx`, to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
