@@ -23,37 +23,20 @@ Each row of the dataset contains the following fields
 
 ###Required Packages
 The following python packages are used in this project.  Before attempting to run `supervised_learner.py` please make sure you have all of these packages installed, with the correct versions if specified.
-- `win32com.client`
+- `win32com`
 - `os`
 - `numpy`
 - `pandas`
 - `string`
 - `sys`
 - `unicodedata`
-- `itertools.chain`
+- `itertools`
 - `datetime`
-- `math.log`
-- `matplotlib.pyplot`
+- `math`
+- `matplotlib`
 - `random`
-- `scipy.stats.mstats.normaltest`
-- `scipy.stats.ttest_ind`
-- `scipy.stats.pearsonr`
-- `scipy.sparse.csr_matrix`
-
-`sklearn.__version__` required to be 0.17.X or greater    
-- `sklearn.cross_validation.train_test_split`
-- `sklearn.linear_model`
-- `sklearn.cross_validation`
-- `sklearn.grid_search.GridSearchCV`
-- `sklearn.metrics.mean_squared_error`
-- `sklearn.metrics.make_scorer`
-- `sklearn.ensemble.RandomForestRegressor`
-- `sklearn.linear_model.BayesianRidge`
-- `sklearn.linear_model.Ridge`
-- `sklearn.tree.DecisionTreeRegressor`
-- `sklearn.svm.SVR`
-- `sklearn.feature_extraction.text.CountVectorizer`
-- `sklearn.decomposition.LatentDirichletAllocation`
+- `scipy`
+- `sklearn` (`sklearn.__version__` required to be 0.17.X or greater)
 
 ##Run
 
