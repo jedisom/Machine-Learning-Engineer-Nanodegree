@@ -1,7 +1,7 @@
 
 # Learning from Chinese Learning Data
 
-This repository holds a project that analyzes data from a book in Chinese that I read.  I couldn't really read Chinese before reading this book, so the data documents my Chinese reading learning process.  I digitized the dataset (it was originally a written log) and used supervised learning analysis to determine what features in the text I read could accurately predict my reading speed as I progressed along the Chinese learning experience curve.
+This repository holds a project that analyzes data from a book in Chinese that I read.  I couldn't really read Chinese before this book, so the data documents my Chinese reading learning process.  I digitized the dataset (it was originally a written log) and used supervised learning to determine what features in the text could predict my reading speed as I progressed along the Chinese reading experience curve.
 
 ##Creating the Dataset
 I have 2 spiral bound notebooks that contain the notes I took while reading this Chinese book.  While studying, if I didn't know a Chinese character, I would write the pinyin, English and Chinese character down.  I did this because I thought the repitition would help me learn to recognize the characters, and help me learn to write Chinese characters.  I also started to keep track of the dates I read, the amount of time I spent reading during each study session, and where in the text I started and stopped each day.  This last bit of information was critical; this is how I transformed the hand written notes into a digital dataset.  The Chinese text I read can be found on this [website](https://www.lds.org/scriptures/bofm?lang=zho) (see any applicable copywrite information there).  
