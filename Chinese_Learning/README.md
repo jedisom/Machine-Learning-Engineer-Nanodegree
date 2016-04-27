@@ -4,7 +4,7 @@
 This repository holds a project that analyzes data from a book in Chinese that I read.  I couldn't really read Chinese before reading this book, so the data documents my Chinese reading learning process.  I digitized the dataset (it was originally a written log) and used supervised learning analysis to determine what features in the text I read could accurately predict my reading speed as I progressed along the Chinese learning experience curve.
 
 ##Creating the Dataset
-I have 2 spiral bound notebooks that contain my notes I took while working to read this Chinese book.  During my study, if I didn't recognize a word/phrase, I would write the pinyin, English and Chinese character down.  I did this, because I thought that the repitition would help me learn how to recognize the characters, and help me to learn to write Chinese characters.  Along with this, I also started to keep track of the dates I read, the amount of time I spent reading during each study session, and where in the text I started and stopped each day.  This last bit of information is critical to this dataset.  This is how I transformed my hand written notes into a digital dataset.  The text I read can be found on this [website](https://www.lds.org/scriptures/bofm?lang=zho) (see any applicable copywrite information there).  
+I have 2 spiral bound notebooks that contain the notes I took while reading this Chinese book.  While studying, if I didn't know a Chinese character, I would write the pinyin, English and Chinese character down.  I did this because I thought the repitition would help me learn to recognize the characters, and help me learn to write Chinese characters.  I also started to keep track of the dates I read, the amount of time I spent reading during each study session, and where in the text I started and stopped each day.  This last bit of information was critical; this is how I transformed the hand written notes into a digital dataset.  The Chinese text I read can be found on this [website](https://www.lds.org/scriptures/bofm?lang=zho) (see any applicable copywrite information there).  
 
 Each row of the dataset contains the following fields
 - Date: This is the date of the study session
@@ -15,7 +15,45 @@ Each row of the dataset contains the following fields
 `Capstone Project Report.docx` containts a full discussion of this project and the results can be found within this repository.  For a detailed explanation of the the data, analysis, results, and next steps please review that file
 
 ##Files Used and Required Packages
+###Files
+- `Chinese_Learning_Log.xlsx`: This is the raw data file
+- `raw_to_tidy.py`: This python script includes functions that turn the raw data file into a tidy dataset for analysis
+- `feature_creation.py`: This python script creates new features from the Chinese text to be used as inputs/predictors in the supvervised learning problem
+- `supervised_learner.py`: This python script is the master script that calls functions from the other scripts above.  It is also where I implemented the supervised learning algorithms to fit a more accurate model to the dataset.
 
+###Required Packages
+The following python packages are used in this project.  Before attempting to run `supervised_learner.py` please make sure you have all of these packages installed, with the correct versions if specified.
+- `win32com.client`
+- `os`
+- `numpy`
+- `pandas`
+- `string`
+- `sys`
+- `unicodedata`
+- `itertools.chain`
+- `datetime`
+- `math.log`
+- `matplotlib.pyplot`
+- `random`
+- `scipy.stats.mstats.normaltest`
+- `scipy.stats.ttest_ind`
+- `scipy.stats.pearsonr`
+- `scipy.sparse.csr_matrix`
+
+sklearn.__version__ required to be 0.17.X or greater    
+- `sklearn.cross_validation.train_test_split`
+- `sklearn.linear_model`
+- `sklearn.cross_validation`
+- `sklearn.grid_search.GridSearchCV`
+- `sklearn.metrics.mean_squared_error`
+- `sklearn.metrics.make_scorer`
+- `sklearn.ensemble.RandomForestRegressor`
+- `sklearn.linear_model.BayesianRidge`
+- `sklearn.linear_model.Ridge`
+- `sklearn.tree.DecisionTreeRegressor`
+- `sklearn.svm.SVR`
+- `sklearn.feature_extraction.text.CountVectorizer`
+- `sklearn.decomposition.LatentDirichletAllocation`
 
 ##Udacity Assignment Guidelines
 >###Capstone Project Guidelines
