@@ -40,7 +40,7 @@ The following python packages are used in this project.  Before attempting to ru
 - `scipy.stats.pearsonr`
 - `scipy.sparse.csr_matrix`
 
-sklearn.__version__ required to be 0.17.X or greater    
+`sklearn.__version__` required to be 0.17.X or greater    
 - `sklearn.cross_validation.train_test_split`
 - `sklearn.linear_model`
 - `sklearn.cross_validation`
