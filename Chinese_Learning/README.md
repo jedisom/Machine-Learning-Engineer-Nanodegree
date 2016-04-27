@@ -12,7 +12,7 @@ Each row of the dataset contains the following fields
 - Text_Read: This is the text from the book I was able to read during the time I was studying.
 
 ##Project Report
-`Capstone Project Report.docx` containts a full discussion of this project and the results can be found within this repository.  For a detailed explanation of the the data, analysis, results, and next steps please review that file
+`Capstone Project Report.docx` containts a full discussion of this project and can be found within this repository.  For a detailed explanation of the the data, analysis, results, and next steps please review this file
 
 ##Files Used and Required Packages
 ###Files
@@ -54,6 +54,14 @@ The following python packages are used in this project.  Before attempting to ru
 - `sklearn.svm.SVR`
 - `sklearn.feature_extraction.text.CountVectorizer`
 - `sklearn.decomposition.LatentDirichletAllocation`
+
+##Run
+
+To run this project: 
+
+1. fork/clone this repository to your local computer.  
+2. Make sure you are in the top-level project directory Chinese_Learning/ (that contains this README). 
+3. Run: `python supervised_learner.py` in the command line
 
 ##Udacity Assignment Guidelines
 >###Capstone Project Guidelines
