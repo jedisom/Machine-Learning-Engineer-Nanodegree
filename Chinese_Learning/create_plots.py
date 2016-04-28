@@ -41,24 +41,7 @@ def create_baseline_plot1(X, y, model, MSE):
     b = str(round(model.intercept_,4))
     plt.text(3.0, 2.2, (r'y = ' + m + r' * x + ' + b))
     plt.text(3.5, 2.0, (r'MSE = %0.4f' % MSE))    
-
-def create_baseline_plot2(X, y, model, MSE):
-    
-    #show linear fit on cumulative time scatter plot
-    fit_line_X = np.array([min(X), max(X)])
-    fit_line_y = model.predict(fit_line_X.reshape(-1,1))    
-    
-    plt.figure(4)     
-    plt.plot(fit_line_X, fit_line_y, "k", label = 'Fit Line')
-    plt.plot(X, y, "bo", label = 'Raw Data')
-    plt.ylabel('ln(Seconds per Character)')
-    plt.xlabel('ln(Cumulative Characters Read)')
-    plt.title('Baseline Fit to Chinese Characters Reading Speed Experience Curve')
-    m = str(round(model.coef_[0],9))
-    b = str(round(model.intercept_,4))
-    plt.text(3.0, 2.2, (r'y = ' + m + r' * x + ' + b))
-    plt.text(3.5, 2.0, (r'MSE = %0.4f' % MSE)) 
-    
+   
 def add_feature_fit_to_baseline(X, y, model):
     #Add char count linear regression fit to the scatter plot for reference
     model.fit (X, y)

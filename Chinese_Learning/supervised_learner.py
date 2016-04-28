@@ -120,7 +120,7 @@ def fine_tune_random_forest(X, y, feature_list):
     #This code is here to fine tune the random forest model
     X_sub = X.loc[:, feature_list]
     params = {'n_estimators': [100, 120, 150], 'max_features': ['auto', 'log2'],
-                 'max_depth': [9, 12, 15]}       
+                 'max_depth': [9, 12, 15]}
     model = RandomForestRegressor(random_state = 1)
     MSE = make_scorer(score_func = mean_squared_error, greater_is_better = False) 
     clf = GridSearchCV(estimator = model, param_grid = params, 
@@ -201,9 +201,7 @@ def run():
     #Create baseline model plot
     plot.create_baseline_plot1(X_train.loc[:, 'ln_cum_char'], y_train, 
                                            base_estimator, base_mean)
-    #plot.create_baseline_plot2(X_train.loc[:, 'ln_cum_char'], y_train, 
-    #                                       base_estimator, base_mean)
-    
+       
     ###Improve on baseline by using features created from the text
     #Add topic modeling features to X 
     X_train = find_topics(X_train, X_test, 3)
