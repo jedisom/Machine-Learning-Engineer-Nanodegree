@@ -67,11 +67,10 @@ def try_linear_features(X, y):
     
     return (X_sub, LinReg)
 
-def try_several_models(X, y):
+def try_several_models(X, y, feature_list):
     ##This section explores different models with the feature set found to work 
     ## well in linear regression
-    feature_list = ('ln_cum_char', 'percent_seen', 'mean_days_since', 
-                    'mean_term_freq', 'norm_t1', 'norm_t2', 'norm_t3') #
+    
     X_sub = X.loc[:, feature_list]
     
     #Create list of models to explore
@@ -117,10 +116,8 @@ def try_several_models(X, y):
             
     return (best_estimator)
 
-def fine_tune_random_forest(X, y):
+def fine_tune_random_forest(X, y, feature_list):
     #This code is here to fine tune the random forest model
-    feature_list = ('ln_cum_char', 'percent_seen', 'mean_days_since', 
-                    'mean_term_freq', 'norm_t1', 'norm_t2', 'norm_t3') #
     X_sub = X.loc[:, feature_list]
     params = {'n_estimators': [100, 120, 150], 'max_features': ['auto', 'log2'],
                  'max_depth': [9, 12, 15]}       
@@ -134,7 +131,8 @@ def fine_tune_random_forest(X, y):
     print ("The best score for the model above is %0.4f" % (clf.best_score_ *(-1)))
     
     return best_estimator
-    
+
+
 def compare_best_to_baseline(X_train, y_train, X_test, y_test, base_estimator, 
                              best_estimator):
     ###Compare the baseline model to the best predictor on the test set
@@ -163,21 +161,20 @@ def compare_best_to_baseline(X_train, y_train, X_test, y_test, base_estimator,
     print '''The Pearson correlation coefficient between the baseline and best model
     scores is %0.4F, and the correlation p-value is %0.4F''' % (corr_p_value[0], corr_p_value[1])
     print "t-test for independece between baseline and best model gives a p-value of %0.4f" % t_P_value    
-
+    
     y_test_base = base_estimator.predict(X_test_base) #Estimate y with model created from training set
     MSE_base = mean_squared_error(y_test, y_test_base) #MSE on test for model based on training set
     print "The non-CV MSE for the baseline is %0.4f" % MSE_base
-    
+        
     #Best MSE on test set
     y_test_best = best_estimator.predict(X_test_sub)
     MSE_best = mean_squared_error(y_test, y_test_best)
     print "The non-CV MSE for the best model is %0.4f" % MSE_best
-    
+        
     return (y_test_base, y_test_best)
 
 
-def run():
-        
+def run():    
     #Import and clean up data
     raw_filename = 'Raw_Chinese_Learning_Log.xlsx'
     tidy_data = tidy_up_data(raw_filename)
@@ -189,7 +186,7 @@ def run():
     #take log in order to deal with exponentially larger y data at beginning of dataset
     y_raw = tidy_data.loc[:, 'secPc'].copy(deep = True)
     y = tidy_data.loc[:, 'secPc'].apply(log)
-
+    
     #Create initial data visualization
     plot.create_initial_plot(X.loc[:, 'cum_char'], y_raw)
     
@@ -202,26 +199,28 @@ def run():
     (base_estimator, base_mean) = train_baseline(X_train, y_train)    
     
     #Create baseline model plot
-    base_plot = plot.create_baseline_plot(X_train.loc[:, 'ln_cum_char'], y_train, 
+    plot.create_baseline_plot1(X_train.loc[:, 'ln_cum_char'], y_train, 
                                            base_estimator, base_mean)
+    #plot.create_baseline_plot2(X_train.loc[:, 'ln_cum_char'], y_train, 
+    #                                       base_estimator, base_mean)
     
     ###Improve on baseline by using features created from the text
     #Add topic modeling features to X 
     X_train = find_topics(X_train, X_test, 3)
     
     #try/train new features and plot them    
-    fit_output = try_linear_features(X_train, y_train)
-    plot.add_feature_fit_to_baseline(base_plot, fit_output[0], y_train, fit_output[1])
+    (X_sub, lin_model) = try_linear_features(X_train, y_train)
+    plot.add_feature_fit_to_baseline(X_sub, y_train, lin_model)
     
     feature_list = ('ln_cum_char', 'percent_seen', 'mean_days_since', 
                     'mean_term_freq', 'norm_t1', 'norm_t2', 'norm_t3')
-    try_several_models(X, y, feature_list)  
-    best_estimator = fine_tune_random_forest(X, y, feature_list)
+    try_several_models(X_train, y_train, feature_list)  
+    best_estimator = fine_tune_random_forest(X_train, y_train, feature_list)
     (y_base, y_best) = compare_best_to_baseline(X_train, y_train, X_test, y_test, 
                              base_estimator, best_estimator)
     
     plot.best_model(X_test, y_test, y_base, y_best)
-    plot.feature_correlations(X, feature_list)
+    plot.feature_correlations(X_train, feature_list)
 
 if __name__ == '__main__':
     run()

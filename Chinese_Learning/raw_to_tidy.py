@@ -13,7 +13,8 @@ def get_Excel_data(filename):
     import os
     import pandas as pd
     import datetime as dt    
-        
+    
+    print ('Opening raw data Excel file...')    
     xl = win32com.client.gencache.EnsureDispatch('Excel.Application')
     xl.Workbooks.Open(os.path.abspath(filename))
     

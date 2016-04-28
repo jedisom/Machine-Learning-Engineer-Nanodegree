@@ -7,34 +7,50 @@ This python script creates plots based on the Chinese Learning Log
 supervised learning dataset
 """
 import matplotlib.pyplot as plt
+import numpy as np
 
 def create_initial_plot(X, y):
+    plt.figure(1)    
     plt.plot(X, y, "o")
     plt.ylabel('Seconds per Character')
     plt.xlabel('Cumulative Characters Read')
     plt.title('Exploratory Plot of Chinese Characters Reading Speed')
     
-def create_baseline_plot(X, y, model, MSE):
-    #Create initial test set visualization; baseline learning curve model
-    fig = plt.figure()    
-    plt.plot(X, y, "o")
-    plt.ylabel('ln(Seconds per Character)')
-    plt.xlabel('Cumulative Characters Read')
-    plt.title('Chinese Character Reading Speed Scatter Plot')
-    #plt.close()  
+def create_baseline_plot1(X, y, model, MSE):
+    ##Create initial test set visualization; baseline learning curve model
     
-    #plt.plot(X_train.loc[:, 'cum_time'], y_train, "o")
+    #Cumulative Characters Plot
+    plt.figure(2)   
+    plt.plot(X, y, "bo", label = 'Raw Data')
+    plt.ylabel('ln(Seconds per Character)')
+    plt.xlabel('ln(Cumulative Characters Read)')
+    plt.title('Baseline Fit to Chinese Characters Reading Speed Experience Curve')
+      
+    #Cumulative Time Plot
+    #plt.figure(3)    
+    #plt.plot(X, y, "bo", label = 'Raw Data')
     #plt.ylabel('ln(Seconds per Character)')
-    #plt.xlabel('Cumulative Time Spent Reading')
-    #plt.title('Chinese Character Reading Speed Scatter Plot')
-    #plt.close()  
+    #plt.xlabel('ln(Cumulative Time Spent Reading)')
+    #plt.title('Baseline Fit to Chinese Characters Reading Speed Experience Curve')
+    
+    #show linear fit on cumulative char scatter plot
+    fit_line_X = np.array([min(X), max(X)])
+    fit_line_y = model.predict(fit_line_X.reshape(-1,1))      
+    plt.plot(fit_line_X, fit_line_y, "k", label = 'Fit Line')
+    m = str(round(model.coef_[0],9))
+    b = str(round(model.intercept_,4))
+    plt.text(3.0, 2.2, (r'y = ' + m + r' * x + ' + b))
+    plt.text(3.5, 2.0, (r'MSE = %0.4f' % MSE))    
+
+def create_baseline_plot2(X, y, model, MSE):
     
     #show linear fit on cumulative time scatter plot
-    fit_line_X = [min(X), max(X)]
-    fit_line_y = model.predict(fit_line_X)    
+    fit_line_X = np.array([min(X), max(X)])
+    fit_line_y = model.predict(fit_line_X.reshape(-1,1))    
     
+    plt.figure(4)     
     plt.plot(fit_line_X, fit_line_y, "k", label = 'Fit Line')
-    plt.plot(X, y, "o", label = 'Raw Data')
+    plt.plot(X, y, "bo", label = 'Raw Data')
     plt.ylabel('ln(Seconds per Character)')
     plt.xlabel('ln(Cumulative Characters Read)')
     plt.title('Baseline Fit to Chinese Characters Reading Speed Experience Curve')
@@ -43,30 +59,29 @@ def create_baseline_plot(X, y, model, MSE):
     plt.text(3.0, 2.2, (r'y = ' + m + r' * x + ' + b))
     plt.text(3.5, 2.0, (r'MSE = %0.4f' % MSE)) 
     
-    return fig
-    
-def add_feature_fit_to_baseline(fig, X, y, model):
+def add_feature_fit_to_baseline(X, y, model):
     #Add char count linear regression fit to the scatter plot for reference
     model.fit (X, y)
     fit_line_y = model.predict(X)
-    fig.plot(X.loc[:, 'ln_cum_char'], fit_line_y, "x", label = 'New Features')
-    fig.legend()
+    plt.figure(2)    
+    plt.plot(X.loc[:, 'ln_cum_char'], fit_line_y, "gx", label = 'New Features')
+    plt.legend()
     #plt.close()
 
 def best_model(X, y, y_base, y_best):
-    #Create plot (ln/ln) of Actual and Predicted Data
-    Raw = plt.plot(X.loc[:, 'ln_cum_char'], y, "o", label = 'Raw Data')
-    Base = plt.plot(X.loc[:, 'ln_cum_char'], y_base, "x", label = 'Baseline')
-    Best = plt.plot(X.loc[:, 'ln_cum_char'], y_best, "x", label = 'Best Model')
+    #Create plot (ln/ln) of Actual and Predicted Data       
+    plt.figure(5)    
+    plt.plot(X.loc[:, 'ln_cum_char'], y, "o", label = 'Raw Data') #Raw = 
+    plt.plot(X.loc[:, 'ln_cum_char'], y_base, "x", label = 'Baseline') #Base = 
+    plt.plot(X.loc[:, 'ln_cum_char'], y_best, "x", label = 'Best Model') #Best = 
     plt.ylabel('ln(Seconds per Character)')
     plt.xlabel('ln(Cumulative Characters Read)')
     plt.title('Baseline/Best Fit to Test Set Chinese Characters Reading Speed')
     plt.legend()
-    plt.close()
-
+    
 def feature_correlations(X, feature_list):
     # Correlation plots of input features for free-form visualization
-    #http://matplotlib.org/examples/pylab_examples/subplots_demo.html
+    #http://matplotlib.org/examples/pylab_examples/subplots_demo.html    
     n = len(feature_list)
     f, axarr = plt.subplots(n, n)
     for i in range(0, n):
