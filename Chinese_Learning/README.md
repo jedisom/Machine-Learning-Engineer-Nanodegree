@@ -45,6 +45,11 @@ To run this project:
 1. fork/clone this repository to your local computer.  
 2. Make sure you are in the top-level project directory Chinese_Learning/ (that contains this README). 
 3. Run: `python supervised_learner.py` in the command line
+ 
+Alternatively:
+1. fork/clone this repository to your local computer.  
+2. Open your preferred Python IDE and make sure the working directory is set to the top-level project directory Chinese_Learning/ (that contains this README).
+3. Run the `supervised_learner.py` in the IDE
 
 ##Udacity Assignment Guidelines
 >###Capstone Project Guidelines
